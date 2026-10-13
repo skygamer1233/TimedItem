@@ -2,55 +2,62 @@
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://adoptium.net/)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21%20%7C%201.21.1-brightgreen.svg)](https://papermc.io/)
-[![Build](https://img.shields.io/badge/Maven-Build%20Passing-blue.svg)](https://maven.apache.org/)
+[![Version](https://img.shields.io/badge/Version-1.1.0-blue.svg)](https://github.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**TimedItem** là plugin Minecraft hiện đại dành cho Spigot, Paper và Purpur (1.21+) giúp bạn tạo ra các trang bị, vũ khí, danh hiệu hoặc vật phẩm đặc biệt có **Hạn Sử Dụng (Expiration Time)**.
+
+---
+
+> 🌐 **Language / Ngôn ngữ:**  
+> **[🇻🇳 Tiếng Việt](#-tiếng-việt)** • **[🇬🇧 English](#-english)**
+
+---
+
+# 🇻🇳 Tiếng Việt
+
+**TimedItem** là plugin Minecraft hiện đại, hiệu năng cao dành cho Spigot, Paper và Purpur (1.21+) giúp bạn tạo và quản lý các trang bị, vũ khí, danh hiệu hoặc vật phẩm đặc biệt có **Hạn Sử Dụng (Expiration Time)**.
 
 Plugin được thiết kế tối ưu, xử lý **Bất đồng bộ (Asynchronous)** triệt để, không gián đoạn TPS server, tích hợp cơ chế tự động đọc/ghi dữ liệu người chơi offline và cơ chế kích hoạt thời hạn thông minh khi vật phẩm nằm trong kho đồ ở chế độ Sinh tồn (`Survival`).
 
 ---
 
-## 🌟 Các Tính Năng Nổi Bật
+## 🌟 Các Tính Năng Nổi Bật (Version 1.1.0)
 
-### 1. 🛡️ Cơ Chế 2 Trạng Thái Thông Minh (Chờ kích hoạt & Đang tính giờ)
-* **Trạng thái Chờ (`Hiệu lực: <thời gian>`):**
-  * Khi tạo vật phẩm bằng lệnh, vật phẩm ở trạng thái chờ: `Hiệu lực: 1d 2h` (chưa đếm ngược).
-  * **Rất thích hợp để làm phần thưởng:** Bạn có thể thoải mái đặt item vào **Hòm báu (Crate), Cửa hàng (Shop), Quà nạp, BattlePass, Kit** hoặc cất trong rương mà **không bị mất hạn**.
-  * Admin ở chế độ Sáng tạo (`Creative`) có thể tự do cầm, di chuyển, nhân bản vật phẩm mà không kích hoạt nhầm.
-* **Trạng thái Kích hoạt (`Hết hạn vào: <ngày giờ>`):**
-  * Ngay khi vật phẩm xuất hiện trong kho đồ của người chơi ở chế độ **Sinh tồn (`Survival`)** (nhặt từ đất, lấy từ rương/GUI, hoặc chuyển gamemode), plugin sẽ:
-    1. Phát âm thanh *Pling* và gửi thông báo kích hoạt đến người chơi.
-    2. Chuyển dòng lore sang `Hết hạn vào: <ngày giờ>`.
-    3. Bắt đầu đếm ngược thời gian chính xác từ thời điểm đó!
+### 1. ⚔️ MMOItems Hook (Mới trong v1.1.0)
+* Tích hợp mượt mà với **MMOItems** thông qua cơ chế Soft-dependency an toàn (hoàn toàn không lỗi nếu server không cài MMOItems).
+* Lệnh `/ti givemmo <player> <type> <id> <time>` cho phép Console, Admin hoặc các plugin khác (Crates, Quest, Shop, Quà nạp) tạo và phát trực tiếp item custom từ kho MMOItems kèm hạn sử dụng.
+* **Tự động xử lý túi đồ đầy:** Nếu túi đồ của người chơi bị đầy, vật phẩm sẽ tự động rơi tại chân người chơi (`dropItemNaturally`) và phát thông báo.
+* **Kích hoạt tức thì nếu ở Survival:** Nếu người chơi đang ở chế độ Sinh tồn, item sẽ lập tức kích hoạt thời gian đếm ngược.
 
----
+### 2. 🧩 Hỗ Trợ PlaceholderAPI (PAPI Expansion)
+Tích hợp sẵn expansion `%timeditem_...%` giúp bạn dễ dàng hiển thị thông tin thời hạn của vật phẩm đang cầm lên **Scoreboard, TAB list, Actionbar, Chat, DeluxeMenus, ConditionalEvents**:
+* `%timeditem_hand_is_timed%`: Trả về `true` hoặc `false` (item trên tay có hạn sử dụng không).
+* `%timeditem_hand_status%`: Trả về `active` (đang chạy), `inactive` (chờ kích hoạt), `expired` (đã hết hạn), hoặc `none`.
+* `%timeditem_hand_status_formatted%`: Trạng thái có màu sắc từ file ngôn ngữ (ví dụ: `§aĐang hoạt động`, `§eChưa kích hoạt`).
+* `%timeditem_hand_remaining%`: Thời gian còn lại hiển thị đẹp mắt (ví dụ: `2d 5h 30m`, `45m 12s`).
+* `%timeditem_hand_remaining_seconds%`: Thời gian còn lại tính bằng giây (dạng số nguyên, lý tưởng cho các điều kiện logic kiểm tra trong menu).
+* `%timeditem_hand_expiry%`: Ngày giờ hết hạn chuẩn định dạng (ví dụ: `25/12/2026 18:30:00`).
+* `%timeditem_hand_name%`: Tên hiển thị của vật phẩm trên tay.
 
-### 2. 💤 Quét Kho Đồ Người Chơi Offline (Offline Player Check)
-* **Tự động xóa đồ hết hạn khi người chơi offline:**
-  * Tích hợp bộ đọc/ghi file NBT (`playerdata/<uuid>.dat`) độc lập viết bằng Java thuần (không phụ thuộc NMS, không lo lỗi khi cập nhật phiên bản).
-  * Tự động kiểm tra cả **Túi đồ (Inventory)** và **Rương Ender (Ender Chest)** của người chơi offline.
-* **Thông báo khi người chơi đăng nhập lại:**
-  * Số lượng vật phẩm bị xóa trong lúc offline được lưu trữ an toàn.
-  * Khi người chơi vào lại server, hệ thống sẽ gửi thông báo: *“Khi bạn đang offline, có X vật phẩm đã hết hạn và tự động bị xóa!”*.
+### 3. 🎫 Phiếu Gia Hạn Thời Gian (Extension Tokens)
+* Tạo ra các vật phẩm tiêu hao (Tokens) dùng để kéo dài thời gian sử dụng cho bất kỳ trang bị có hạn nào.
+* **Cơ chế Kéo & Thả (Drag & Drop):** Người chơi chỉ cần nhặt Phiếu Gia Hạn trong túi đồ và nhấp chuột trực tiếp lên trang bị có hạn để nạp thêm thời gian!
+* Hiệu ứng âm thanh hấp dẫn (`BLOCK_ENCHANTMENT_TABLE_USE` & `ENTITY_PLAYER_LEVELUP`) kèm thông báo rõ ràng về hạn sử dụng mới.
+* Tùy biến toàn diện trong `config.yml`: Material, Tên hiển thị, Lore, Hiệu ứng phát sáng (Glow), CustomModelData.
 
----
+### 4. 🌐 Đa Ngôn Ngữ Song Ngữ (Tiếng Việt & English)
+* Hỗ trợ chuyển đổi nhanh chóng trong `config.yml` với `language: "vi"` hoặc `language: "en"`.
+* Cung cấp sẵn hai bộ ngôn ngữ hoàn chỉnh: `lang_vi.yml` và `lang_en.yml`.
+* Tự động điều chỉnh cả dòng Lore trên item và toàn bộ thông báo hệ thống theo ngôn ngữ đã chọn.
 
-### 3. ⚡ Bất Đồng Bộ 100% (Async Check — 0% Lag TPS)
-* **Bảo vệ hiệu năng server tuyệt đối:**
-  * Toàn bộ tác vụ đọc/ghi file đĩa người chơi offline chạy ngầm ở luồng **Asynchronous**, loại bỏ hoàn toàn hiện tượng drop TPS.
-  * Các thao tác kiểm tra kho đồ người chơi online và vật phẩm rơi ngoài sàn được đồng bộ an toàn (Thread-safe) theo chuẩn Spigot/Paper.
-* **Kiểm tra mặt đất (`World Check`):**
-  * Tự động quét và dọn dẹp các vật phẩm có thời hạn bị vứt rơi trên sàn thế giới nếu chúng đã hết hạn.
-* **Bắt sự kiện thời gian thực (Real-time Event):**
-  * Khi người chơi click vào item trong kho, tương tác chuột, hoặc nhặt item từ đất, hệ thống sẽ kiểm tra ngay lập tức. Nếu item vừa hết hạn, nó sẽ biến mất ngay và phát âm thanh vỡ đồ.
+### 5. 🛡️ Cơ Chế 2 Trạng Thái Thông Minh
+* **Trạng thái Chờ (`Hiệu lực: <thời gian>`):** Khi tạo bằng lệnh, vật phẩm chưa tính giờ; rất thích hợp đặt vào Crate, Shop, BattlePass, Kit hoặc rương đồ. Admin ở chế độ Sáng tạo (`Creative`) có thể di chuyển, nhân bản vật phẩm mà không sợ kích hoạt nhầm.
+* **Trạng thái Kích hoạt (`Hết hạn vào: <ngày giờ>`):** Tự động kích hoạt khi người chơi sinh tồn cầm hoặc nhận vào kho đồ.
 
----
-
-### 4. 🎨 Quản Lý Dữ Liệu & Lore Chuẩn Xác
-* Sử dụng hệ thống **`PersistentDataContainer` (PDC)** chuẩn của Minecraft để lưu trữ timestamp.
-* **Không làm hỏng Lore khác:** Tự động nhận diện và cập nhật đúng dòng hạn sử dụng mà không làm mất Enchantment, dòng thuộc tính MMORPG, Custom Lore của các plugin khác.
-* **Hỗ trợ màu sắc đa dạng:** Hỗ trợ toàn bộ mã màu Minecraft truyền thống `&a, &e, &c...` và mã màu **Hex Color** dạng `&#RRGGBB`.
+### 6. 💤 Quét Kho Đồ Người Chơi Offline
+* Tích hợp bộ đọc/ghi file NBT (`playerdata/<uuid>.dat`) độc lập viết bằng Java thuần.
+* Tự động xóa sạch đồ hết hạn trong túi và Rương Ender của người chơi offline ngầm (Asynchronous 100%, 0% drop TPS).
+* Gửi thông báo tổng kết khi người chơi đăng nhập lại.
 
 ---
 
@@ -59,116 +66,145 @@ Plugin được thiết kế tối ưu, xử lý **Bất đồng bộ (Asynchron
 | Lệnh | Quyền hạn (Permission) | Mô tả & Ví dụ |
 | :--- | :--- | :--- |
 | `/ti add [thời gian]` | `timeditem.command.add` | Thêm thời gian hiệu lực cho item trên tay (VD: `/ti add 1d2h`, `/ti add 30m`) |
-| `/ti remove [thời gian]` | `timeditem.command.remove` | Trừ bớt thời gian của item (VD: `/ti remove 3d5h`). Nếu trừ về quá khứ sẽ tự xoá. |
-| `/ti set <định dạng>` | `timeditem.command.set` | Đặt thời gian hiệu lực hoặc ấn định ngày giờ hết hạn (VD: `/ti set 1d2h`, `/ti set 12/07/2026`, `/ti set 27/05/2026 13:17:29`) |
+| `/ti remove [thời gian]` | `timeditem.command.remove` | Trừ bớt thời gian của item (VD: `/ti remove 3d5h`) |
+| `/ti set <định dạng>` | `timeditem.command.set` | Đặt thời gian hiệu lực hoặc ấn định ngày giờ hết hạn (VD: `/ti set 12/07/2026`) |
 | `/ti clear` | `timeditem.command.clear` | Xóa bỏ hoàn toàn thời hạn khỏi item trên tay |
-| `/ti reload` | `timeditem.command.reload` | Nạp lại cấu hình plugin (`config.yml` & `lang.yml`) |
-| `/ti help <trang>` | `timeditem.command.help` | Xem danh sách hướng dẫn phân trang |
-
-> 💡 **Hỗ trợ Tab-Completion:** Tự động gợi ý lệnh con, các mốc thời gian phổ biến (`1h`, `1d`, `7d`, `30d`...) và số trang.
-
-### ⏱️ Các đơn vị thời gian hỗ trợ:
-* `s` / `sec`: Giây
-* `m` / `min`: Phút
-* `h` / `hr`: Giờ
-* `d` / `day`: Ngày
-* `w` / `week`: Tuần
-* `mo` / `month`: Tháng (30 ngày)
-* `y` / `year`: Năm (365 ngày)
-* *Có thể ghép lại:* `1y2mo3w4d5h30m10s`, `1d2h`, `3d5h`...
+| `/ti check` | `timeditem.command.check` | Xem thông tin chi tiết về thời hạn, trạng thái của item trên tay |
+| `/ti givemmo <người chơi> <loại> <id> <thời gian>` | `timeditem.command.givemmo` | Phát item MMOItems kèm thời hạn (VD: `/ti givemmo Steve SWORD CUTLASS 7d`) |
+| `/ti token <thời gian> [số lượng] [người chơi]` | `timeditem.command.token` | Tạo hoặc tặng Phiếu Gia Hạn (VD: `/ti token 3d 1 Steve` hoặc `/ti token 1d`) |
+| `/ti reload` | `timeditem.command.reload` | Nạp lại cấu hình và ngôn ngữ |
+| `/ti help [trang]` | `timeditem.command.help` | Xem danh sách hướng dẫn lệnh |
 
 ---
 
-## 🔑 Quyền Hạn (Permissions)
+## 🔑 Bảng Quyền Hạn (Permissions)
 
-* `timeditem.command.add` — Quyền sử dụng lệnh `/ti add` *(Mặc định: OP)*
-* `timeditem.command.remove` — Quyền sử dụng lệnh `/ti remove` *(Mặc định: OP)*
-* `timeditem.command.set` — Quyền sử dụng lệnh `/ti set` *(Mặc định: OP)*
-* `timeditem.command.clear` — Quyền sử dụng lệnh `/ti clear` *(Mặc định: OP)*
-* `timeditem.command.reload` — Quyền sử dụng lệnh `/ti reload` *(Mặc định: OP)*
-* `timeditem.command.help` — Quyền xem menu trợ giúp `/ti help` *(Mặc định: Mọi người)*
+* `timeditem.command.add` — Dùng lệnh `/ti add` *(Mặc định: OP)*
+* `timeditem.command.remove` — Dùng lệnh `/ti remove` *(Mặc định: OP)*
+* `timeditem.command.set` — Dùng lệnh `/ti set` *(Mặc định: OP)*
+* `timeditem.command.clear` — Dùng lệnh `/ti clear` *(Mặc định: OP)*
+* `timeditem.command.check` — Dùng lệnh `/ti check` *(Mặc định: Mọi người)*
+* `timeditem.command.givemmo` — Dùng lệnh `/ti givemmo` *(Mặc định: OP)*
+* `timeditem.command.token` — Dùng lệnh `/ti token` *(Mặc định: OP)*
+* `timeditem.command.reload` — Dùng lệnh `/ti reload` *(Mặc định: OP)*
+* `timeditem.command.help` — Dùng lệnh `/ti help` *(Mặc định: Mọi người)*
 
 ---
 
-## ⚙️ Cấu Hình Mẫu
+# 🇬🇧 English
 
-### 📄 `config.yml`
+**TimedItem** is a next-generation, high-performance item expiration management plugin for Spigot, Paper, and Purpur (1.21+). It allows server administrators to create temporary equipment, weapons, armor, badges, and rewards with exact expiration dates or countdown timers.
+
+Built with **100% Asynchronous processing**, TimedItem guarantees **Zero TPS drops**, pure Java offline playerdata NBT reading/writing, and a smart dual-state activation mechanic for Survival mode.
+
+---
+
+## 🌟 Key Features (v1.1.0)
+
+### 1. ⚔️ MMOItems Integration (`/ti givemmo`)
+* Seamless soft-dependency with **MMOItems** using safe runtime reflection. No crash or errors if MMOItems is absent.
+* Easily give timed MMOItems via Console or In-game: `/ti givemmo <player> <type> <id> <time>` (e.g. `/ti givemmo Steve SWORD CUTLASS 7d`).
+* **Inventory Overflow Safe:** Automatically drops items naturally at player's location if the inventory is full.
+* **Instant Survival Activation:** Immediately starts counting down if given to players in Survival mode.
+
+### 2. 🧩 PlaceholderAPI Expansion
+Expose real-time item expiration variables across your server (Scoreboard, TAB, Actionbar, DeluxeMenus, ConditionalEvents):
+* `%timeditem_hand_is_timed%`: Returns `true` or `false`.
+* `%timeditem_hand_status%`: Returns `active`, `inactive`, `expired`, or `none`.
+* `%timeditem_hand_status_formatted%`: Localized colored status string (e.g. `§aActive`).
+* `%timeditem_hand_remaining%`: Formatted countdown string (e.g. `2d 5h 30m`).
+* `%timeditem_hand_remaining_seconds%`: Exact seconds remaining as an integer (perfect for GUI requirement checks).
+* `%timeditem_hand_expiry%`: Formatted expiration date (`dd/MM/yyyy HH:mm:ss`).
+* `%timeditem_hand_name%`: Held item display name.
+
+### 3. 🎫 Time Extension Tokens
+* Issue consumable extension tokens via `/ti token <time> [amount] [player]`.
+* **Intuitive Drag-and-Drop:** Players grab the token and click directly onto any timed item in their inventory to extend its expiration!
+* Plays level-up and enchantment table sound effects upon successful extension.
+* Fully customizable token item material, name, lore, glow, and custom-model-data in `config.yml`.
+
+### 4. 🌐 Bilingual Engine (English & Vietnamese)
+* Switch between languages with a single toggle: `language: "en"` or `language: "vi"`.
+* Ships with complete `lang_en.yml` and `lang_vi.yml` translation files.
+* `/ti reload` applies configuration and language updates immediately without restarting the server.
+
+### 5. 🛡️ Smart Dual-State Engine
+* **Inactive State (`Duration: <time>`):** Countdown does NOT tick down when items are stored in Crates, Shops, Kits, or reward GUIs. Creative mode admins can handle items safely.
+* **Active State (`Expires at: <date>`):** Automatically triggers and begins counting down when an item is placed in a player's inventory in **Survival mode**.
+
+### 6. 💤 100% Async Offline Player NBT Scanner
+* Scans `world/playerdata/*.dat` files completely off the main server thread.
+* Automatically strips expired items from both **Player Inventories** and **Ender Chests** while players are offline.
+* Notifies returning players with a summary message upon login.
+
+---
+
+## 💻 Commands & Permissions
+
+| Command | Permission | Description |
+| :--- | :--- | :--- |
+| `/ti add [time]` | `timeditem.command.add` | Add duration to held item (ex: `/ti add 1d2h`, `/ti add 30m`) |
+| `/ti remove [time]` | `timeditem.command.remove` | Remove duration from item (ex: `/ti remove 3d5h`) |
+| `/ti set <format>` | `timeditem.command.set` | Set duration or exact date (ex: `/ti set 12/07/2026`) |
+| `/ti clear` | `timeditem.command.clear` | Remove expiration from held item |
+| `/ti check` | `timeditem.command.check` | Inspect held item's expiration status |
+| `/ti givemmo <player> <type> <id> <time>` | `timeditem.command.givemmo` | Give timed MMOItems item (ex: `/ti givemmo Steve SWORD CUTLASS 7d`) |
+| `/ti token <time> [amount] [player]` | `timeditem.command.token` | Give Time Extension Tokens (ex: `/ti token 3d 1 Steve`) |
+| `/ti reload` | `timeditem.command.reload` | Reload configuration and language files |
+| `/ti help [page]` | `timeditem.command.help` | View paged help menu |
+
+---
+
+## ⚙️ Configuration Preview
+
+### `config.yml`
 ```yaml
-# Định dạng ngày giờ mặc định cho lệnh /ti set
+# ======================================================
+#            TimedItem Configuration (v1.1.0)
+# ======================================================
+
+# Language setting: "vi" (Vietnamese) or "en" (English)
+# Plugin will load lang_vi.yml or lang_en.yml based on this option.
+language: "vi"
+
+# Date format for commands and lore display
+# Default: dd/MM/yyyy HH:mm:ss
 date-format: "dd/MM/yyyy HH:mm:ss"
 
-# Chu kỳ kiểm tra vật phẩm hết hạn (tính bằng giây)
+# How often to check for expired items (in seconds)
+# This affects both inventory and world checks
 check-interval: 30
 
-# Bật/tắt kiểm tra vật phẩm rơi ngoài sàn
+# Whether to check items dropped in the world
 world-check: true
 
-# Bật/tắt kiểm tra kho đồ người chơi online
+# Whether to check player inventories
 inventory-check: true
 
-# Bật/tắt kiểm tra kho đồ người chơi offline
+# Whether to check offline player inventories
 offline-check: true
 
-# Số lượng lệnh hiển thị mỗi trang help
+# Number of items shown per help page
 help-per-page: 7
 
-# Dòng lore khi vật phẩm CHƯA kích hoạt (chưa tính giờ)
+# Lore format when item is NOT yet activated (has not started countdown)
+# {duration} will be replaced with time duration (ex: 1d 2h, 30m)
 lore-inactive-format: "&eHiệu lực: &a{duration}"
 
-# Dòng lore khi vật phẩm ĐÃ kích hoạt (đang tính giờ)
+# Lore format when item IS activated (countdown is running)
+# {expiry} will be replaced with formatted date
 lore-format: "&cHết hạn vào: &e{expiry}"
+
+# Configuration for Extension Tokens (Phiếu Gia Hạn Thời Gian)
+token:
+  material: PAPER
+  custom-model-data: 0
+  glow: true
+  name: "&6&lPhiếu Gia Hạn &7(+{duration})"
+  lore:
+    - "&7Kéo và thả phiếu này vào một"
+    - "&7vật phẩm có thời hạn để gia hạn."
+    - ""
+    - "&eThời gian cộng thêm: &a+{duration}"
+    - "&8&o(Nhấp chuột trái vào item để sử dụng)"
 ```
-
-### 📄 `lang.yml` (Tùy biến 100% ngôn ngữ)
-```yaml
-prefix: "&8[&6TimedItem&8] &r"
-item-expired: "&cVật phẩm &e{item} &cx{amount} &cđã hết hạn và đã tự xoá khỏi kho!"
-items-expired-offline: "&eKhi bạn đang offline, có &c{count} &evật phẩmđã hết hạn và đã tự xoá khỏi kho!"
-item-activated: "&aVật phẩm &e{item} &ađã kích hoạt! Hạn sử dụng: &e{expiry}"
-duration-set: "&aĐã đặt thời gian hiệu lực &e{duration} &acho vật phẩm (sẽ tính giờ khi cầm trên tay ở chế độ sinh tồn)."
-time-added: "&aĐã thêm &e{time} &avào vật phẩm. Hạn sử dụng mới: &e{expiry}"
-time-removed: "&aĐã xoá &e{time} &akhỏi vật phẩm. Hạn sử dụng mới: &e{expiry}"
-time-set: "&aĐã set thời hạn thành &e{expiry}&a."
-time-cleared: "&aĐã xoá thời hạn cho item."
-no-item-in-hand: "&cBạn phải cầm item trên tay!"
-not-timed-item: "&cItem này không có thời hạn!"
-invalid-time-format: "&cSai định dạng thời gian! Ví dụ: 1d2h30m"
-invalid-date-format: "&cSai định dạng thời gian! Ví dụ: {format}"
-date-in-past: "&cBạn phải set ngày ở tương lai!"
-no-permission: "&cBạn không có quyền dùng lệnh này này!"
-reloaded: "&aĐã nạp lại plugin thành công!"
-player-only: "&cBạn phải là player!"
-usage: "&cCách dùng: {usage}"
-help-header: "&8&m----------&r &6Hướng Dẫn TimedItem &7(Trang {page}/{max_page}) &8&m----------"
-help-footer: "&8&m----------&r &7Dùng /ti help {next_page} để qua trang kế tiếp &8&m----------"
-
-# Toàn bộ danh sách lệnh trong /ti help đều có thể tùy chỉnh tại đây:
-help-commands:
-  add: "&6/ti add [time] &7- Thêm thời hạn cho vật phẩm. &8(vd: /ti add 1d2h)"
-  remove: "&6/ti remove [time] &7- Xoá bớt thời hạn của vật phẩm. &8(vd: /ti remove 3d5h)"
-  set: "&6/ti set <format> &7- Đặt thời hạn cho vật phẩm. &8(vd: /ti set 12/07/2025)"
-  clear: "&6/ti clear &7- Xoá thời hạn khỏi vật phẩm."
-  reload: "&6/ti reload &7- Nạp lại plugin."
-  help: "&6/ti help <page> &7- Xem hướng dẫn sử dụng."
-```
-
----
-
-## 🛠️ Hướng Dẫn Build Dự Án (Maven)
-
-Yêu cầu máy cài đặt **Java 21** và **Maven**:
-
-```bash
-git clone https://github.com/SkyGamer/TimedItem.git
-cd TimedItem
-mvn clean package
-```
-
-File `.jar` sau khi build xong sẽ nằm tại thư mục `target/TimedItem-1.0.0.jar`.
-
----
-
-## 📌 Yêu Cầu Kỹ Thuật
-* **Phiên bản Server:** Spigot, Paper, Purpur 1.21 / 1.21.1+
-* **Java:** Java 21+
-* **Dependencies:** Độc lập hoàn toàn, không cần plugin phụ trợ (như ProtocolLib hay NBTAPI).
