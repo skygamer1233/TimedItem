@@ -1,0 +1,84 @@
+# ======================================================
+#        TimedItem Language - English (lang_en.yml)
+# ======================================================
+
+prefix: "&8[&6TimedItem&8] &r"
+
+# Item lifecycle messages
+item-expired: "&cItem &e{item} &cx{amount} &chas expired and was removed from your inventory!"
+items-expired-offline: "&eWhile you were offline, &c{count} &eitem(s) expired and were removed from your inventory!"
+item-activated: "&aItem &e{item} &ahas been activated! Expiration: &e{expiry}"
+duration-set: "&aSet validity duration &e{duration} &afor item (countdown starts when held in Survival mode)."
+time-added: "&aAdded &e{time} &ato item. New expiration: &e{expiry}"
+time-removed: "&aRemoved &e{time} &afrom item. New expiration: &e{expiry}"
+time-set: "&aSet expiration to &e{expiry}&a."
+time-cleared: "&aCleared expiration time from item."
+
+# General error & notice messages
+no-item-in-hand: "&cYou must hold an item in your hand!"
+not-timed-item: "&cThis item does not have an expiration time!"
+invalid-time-format: "&cInvalid time format! Example: 1d2h30m, 7d, 30m"
+invalid-date-format: "&cInvalid date format! Example: {format}"
+date-in-past: "&cYou must set a date in the future!"
+no-permission: "&cYou do not have permission to use this command!"
+reloaded: "&aConfiguration and language reloaded successfully! (Language: {lang})"
+player-only: "&cThis command can only be executed by a player!"
+player-not-found: "&cPlayer &e{player} &cwas not found or is offline!"
+invalid-amount: "&cAmount must be a positive integer!"
+usage: "&cUsage: {usage}"
+
+# MMOItems integration messages
+mmo-not-installed: "&cMMOItems plugin is not installed or enabled on this server!"
+mmo-type-not-found: "&cMMOItems type &e{type} &cnot found!"
+mmo-item-not-found: "&cMMOItems item not found for type &e{type} &cwith ID &e{id}&c!"
+mmo-given: "&aGave MMOItems item &e{item} &a(duration: &e{time}&a) to &e{player}&a!"
+mmo-received: "&aYou received MMOItems item &e{item} &a(duration: &e{time}&a)!"
+inventory-full-dropped: "&eInventory of {player} is full! Item dropped on the ground."
+
+# Extension token messages
+token-given: "&aGave &e{amount}x &aExtension Token(s) (&e+{time}&a) to &e{player}&a!"
+token-received: "&aYou received &e{amount}x &aExtension Token(s) (&e+{time}&a)!"
+token-applied: "&aExtension token applied! Added &e+{time} &ato &e{item}&a. New expiration: &e{expiry}"
+token-cannot-extend: "&cCannot apply extension token to expired or non-timed items!"
+
+# Lore display formats
+lore-inactive-format: "&eDuration: &a{duration}"
+lore-format: "&cExpires at: &e{expiry}"
+
+# Token item display
+token-name: "&6&lExtension Token &7(+{duration})"
+token-lore:
+  - "&7Drag and drop this token onto"
+  - "&7a timed item to extend its duration."
+  - ""
+  - "&eAdded duration: &a+{duration}"
+  - "&8&o(Left-click on item to apply)"
+
+# Status labels (for /ti check and PlaceholderAPI)
+status-active: "&aActive"
+status-inactive: "&eInactive"
+status-expired: "&cExpired"
+status-none: "&7Permanent"
+
+# Inspect (/ti check) format
+check-header: "&8&m----------------------------------------"
+check-title: "&6&lTimed Item Information:"
+check-item: " &7* Item: &f{item}"
+check-status: " &7* Status: {status}"
+check-remaining: " &7* Remaining: &a{remaining}"
+check-expiry: " &7* Expiration: &e{expiry}"
+check-footer: "&8&m----------------------------------------"
+
+# Help system
+help-header: "&8&m----------&r &6TimedItem Help &7(Page {page}/{max_page}) &8&m----------"
+help-footer: "&8&m----------&r &7Type /ti help {next_page} to view next page &8&m----------"
+help-commands:
+  add: "&6/ti add [time] &7- Add duration to item in main hand. &8(e.g. /ti add 1d2h)"
+  remove: "&6/ti remove [time] &7- Remove duration from item in main hand. &8(e.g. /ti remove 3d5h)"
+  set: "&6/ti set <format> &7- Set exact expiration date or duration. &8(e.g. /ti set 12/07/2026)"
+  clear: "&6/ti clear &7- Clear expiration time from held item."
+  check: "&6/ti check &7- Inspect timed item in your hand."
+  givemmo: "&6/ti givemmo <player> <type> <id> <time> &7- Give a timed MMOItems item."
+  token: "&6/ti token <time> [amount] [player] &7- Create/give Time Extension Token."
+  reload: "&6/ti reload &7- Reload plugin configuration and languages."
+  help: "&6/ti help <page> &7- Show help menu."
