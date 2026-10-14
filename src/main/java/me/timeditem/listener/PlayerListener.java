@@ -4,8 +4,11 @@ import me.timeditem.TimedItem;
 import me.timeditem.check.CheckManager;
 import me.timeditem.config.ConfigManager;
 import me.timeditem.item.ItemManager;
+import me.timeditem.util.DateParser;
+import me.timeditem.util.TimeParser;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -145,6 +148,58 @@ public class PlayerListener implements Listener {
                 }
             }
             return;
+        }
+
+        // Extension token application: cursor has token and clicks on a timed item
+        ItemStack cursor = event.getCursor();
+        if (cursor != null && itemManager.isExtensionToken(cursor)) {
+            if (current != null && current.getType() != Material.AIR) {
+                if (itemManager.isTimedItem(current)) {
+                    event.setCancelled(true);
+                    if (event.getWhoClicked() instanceof Player player) {
+                        if (itemManager.isExpired(current)) {
+                            player.sendMessage(configManager.getMessage("token-cannot-extend"));
+                            return;
+                        }
+
+                        Long tokenDuration = itemManager.getTokenDuration(cursor);
+                        if (tokenDuration != null && tokenDuration > 0) {
+                            long newResult = itemManager.addExpireTime(current, tokenDuration);
+                            event.setCurrentItem(current);
+
+                            // Consume one token from cursor
+                            if (cursor.getAmount() > 1) {
+                                cursor.setAmount(cursor.getAmount() - 1);
+                                event.getView().setCursor(cursor);
+                            } else {
+                                event.getView().setCursor(null);
+                            }
+
+                            String formattedDuration = TimeParser.formatDuration(tokenDuration);
+                            String itemName = itemManager.getItemDisplayName(current);
+                            String expiryStr;
+                            if (itemManager.isInactiveTimedItem(current)) {
+                                expiryStr = TimeParser.formatDuration(newResult);
+                            } else {
+                                expiryStr = DateParser.formatDate(newResult, configManager.getDateFormat());
+                            }
+
+                            String msg = configManager.getMessage("token-applied")
+                                    .replace("{time}", formattedDuration)
+                                    .replace("{item}", itemName)
+                                    .replace("{expiry}", expiryStr);
+                            player.sendMessage(msg);
+
+                            try {
+                                player.playSound(player.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 1.2f);
+                                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.8f);
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
+                    return;
+                }
+            }
         }
 
         if (event.getWhoClicked() instanceof Player player && player.getGameMode() == GameMode.SURVIVAL) {
