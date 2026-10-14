@@ -1,0 +1,84 @@
+# ======================================================
+#       TimedItem Language - Tiếng Việt (lang_vi.yml)
+# ======================================================
+
+prefix: "&8[&6TimedItem&8] &r"
+
+# Item lifecycle messages
+item-expired: "&cVật phẩm &e{item} &cx{amount} &cđã hết hạn và đã tự xoá khỏi kho!"
+items-expired-offline: "&eKhi bạn đang offline, có &c{count} &evật phẩm đã hết hạn và đã tự xoá khỏi kho!"
+item-activated: "&aVật phẩm &e{item} &ađã kích hoạt! Hạn sử dụng: &e{expiry}"
+duration-set: "&aĐã đặt thời gian hiệu lực &e{duration} &acho vật phẩm (sẽ tính giờ khi cầm trên tay ở chế độ sinh tồn)."
+time-added: "&aĐã thêm &e{time} &avào vật phẩm. Hạn sử dụng mới: &e{expiry}"
+time-removed: "&aĐã xoá &e{time} &akhỏi vật phẩm. Hạn sử dụng mới: &e{expiry}"
+time-set: "&aĐã set thời hạn thành &e{expiry}&a."
+time-cleared: "&aĐã xoá thời hạn cho item."
+
+# General error & notice messages
+no-item-in-hand: "&cBạn phải cầm item trên tay!"
+not-timed-item: "&cItem này không có thời hạn!"
+invalid-time-format: "&cSai định dạng thời gian! Ví dụ: 1d2h30m, 7d, 30m"
+invalid-date-format: "&cSai định dạng thời gian! Ví dụ: {format}"
+date-in-past: "&cBạn phải set ngày ở tương lai!"
+no-permission: "&cBạn không có quyền dùng lệnh này!"
+reloaded: "&aĐã nạp lại cấu hình và ngôn ngữ thành công! (Ngôn ngữ: {lang})"
+player-only: "&cChỉ người chơi mới dùng được lệnh này!"
+player-not-found: "&cKhông tìm thấy người chơi &e{player}&c hoặc người chơi đang ngoại tuyến!"
+invalid-amount: "&cSố lượng phải là một số nguyên dương hợp lệ!"
+usage: "&cCách dùng: {usage}"
+
+# MMOItems integration messages
+mmo-not-installed: "&cPlugin MMOItems chưa được cài đặt hoặc chưa khởi động trên máy chủ!"
+mmo-type-not-found: "&cKhông tìm thấy loại MMOItems &e{type}&c!"
+mmo-item-not-found: "&cKhông tìm thấy vật phẩm MMOItems loại &e{type}&c với ID &e{id}&c!"
+mmo-given: "&aĐã tặng vật phẩm MMOItems &e{item} &a(thời hạn: &e{time}&a) cho &e{player}&a!"
+mmo-received: "&aBạn đã nhận được vật phẩm MMOItems &e{item} &a(thời hạn: &e{time}&a)!"
+inventory-full-dropped: "&eTúi đồ của {player} đã đầy! Vật phẩm đã được thả xuống đất."
+
+# Extension token messages
+token-given: "&aĐã trao &e{amount}x &aPhiếu Gia Hạn (&e+{time}&a) cho &e{player}&a!"
+token-received: "&aBạn nhận được &e{amount}x &aPhiếu Gia Hạn (&e+{time}&a)!"
+token-applied: "&aĐã dùng Phiếu Gia Hạn! Thêm &e+{time} &acho &e{item}&a. Hạn mới: &e{expiry}"
+token-cannot-extend: "&cKhông thể gia hạn cho vật phẩm đã hết hạn hoặc không có thời hạn!"
+
+# Lore display formats
+lore-inactive-format: "&eHiệu lực: &a{duration}"
+lore-format: "&cHết hạn vào: &e{expiry}"
+
+# Token item display
+token-name: "&6&lPhiếu Gia Hạn &7(+{duration})"
+token-lore:
+  - "&7Kéo và thả phiếu này vào một"
+  - "&7vật phẩm có thời hạn để gia hạn."
+  - ""
+  - "&eThời gian cộng thêm: &a+{duration}"
+  - "&8&o(Nhấp chuột trái vào item để sử dụng)"
+
+# Status labels (for /ti check and PlaceholderAPI)
+status-active: "&aĐang hoạt động"
+status-inactive: "&eChưa kích hoạt"
+status-expired: "&cĐã hết hạn"
+status-none: "&7Không có hạn"
+
+# Inspect (/ti check) format
+check-header: "&8&m----------------------------------------"
+check-title: "&6&lThông Tin Vật Phẩm Có Thời Hạn:"
+check-item: " &7* Vật phẩm: &f{item}"
+check-status: " &7* Trạng thái: {status}"
+check-remaining: " &7* Thời gian còn lại: &a{remaining}"
+check-expiry: " &7* Thời điểm hết hạn: &e{expiry}"
+check-footer: "&8&m----------------------------------------"
+
+# Help system
+help-header: "&8&m----------&r &6Hướng Dẫn TimedItem &7(Trang {page}/{max_page}) &8&m----------"
+help-footer: "&8&m----------&r &7Dùng /ti help {next_page} để qua trang kế tiếp &8&m----------"
+help-commands:
+  add: "&6/ti add [time] &7- Thêm thời hạn cho vật phẩm trên tay. &8(vd: /ti add 1d2h)"
+  remove: "&6/ti remove [time] &7- Xoá bớt thời hạn của vật phẩm trên tay. &8(vd: /ti remove 3d5h)"
+  set: "&6/ti set <format> &7- Đặt thời hạn hoặc ngày hết hạn. &8(vd: /ti set 12/07/2026)"
+  clear: "&6/ti clear &7- Xoá hoàn toàn thời hạn khỏi vật phẩm."
+  check: "&6/ti check &7- Kiểm tra chi tiết thời hạn vật phẩm trên tay."
+  givemmo: "&6/ti givemmo <player> <type> <id> <time> &7- Tặng item MMOItems có thời hạn."
+  token: "&6/ti token <time> [amount] [player] &7- Tạo/tặng Phiếu Gia Hạn thời gian."
+  reload: "&6/ti reload &7- Nạp lại plugin và cấu hình ngôn ngữ."
+  help: "&6/ti help <page> &7- Xem danh sách hướng dẫn lệnh."
