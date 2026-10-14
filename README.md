@@ -163,48 +163,38 @@ Expose real-time item expiration variables across your server (Scoreboard, TAB, 
 #            TimedItem Configuration (v1.1.0)
 # ======================================================
 
-# Language setting: "vi" (Vietnamese) or "en" (English)
-# Plugin will load lang_vi.yml or lang_en.yml based on this option.
-language: "vi"
+# Active language of the plugin:
+#   "en" : English (loads lang/lang_en.yml)
+#   "vi" : Vietnamese (loads lang/lang_vi.yml)
+# If set to "vi", reloading the plugin (/ti reload) will
+# automatically switch this configuration file to Vietnamese!
+language: "en"
 
-# Date format for commands and lore display
+# Date format for commands and expiration display
 # Default: dd/MM/yyyy HH:mm:ss
 date-format: "dd/MM/yyyy HH:mm:ss"
 
 # How often to check for expired items (in seconds)
-# This affects both inventory and world checks
+# Affects both online inventory and world dropped checks
 check-interval: 30
 
 # Whether to check items dropped in the world
 world-check: true
 
-# Whether to check player inventories
+# Whether to check online player inventories
 inventory-check: true
 
-# Whether to check offline player inventories
+# Whether to check offline player inventories and Ender Chests (100% Async)
 offline-check: true
 
-# Number of items shown per help page
+# Number of items shown per help page (/ti help)
 help-per-page: 7
 
-# Lore format when item is NOT yet activated (has not started countdown)
-# {duration} will be replaced with time duration (ex: 1d 2h, 30m)
-lore-inactive-format: "&eHiệu lực: &a{duration}"
-
-# Lore format when item IS activated (countdown is running)
-# {expiry} will be replaced with formatted date
-lore-format: "&cHết hạn vào: &e{expiry}"
-
-# Configuration for Extension Tokens (Phiếu Gia Hạn Thời Gian)
+# Technical settings for Extension Tokens (Phiếu Gia Hạn)
+# Display name & lore of tokens are localized in lang/lang_en.yml or lang/lang_vi.yml
 token:
   material: PAPER
   custom-model-data: 0
   glow: true
-  name: "&6&lPhiếu Gia Hạn &7(+{duration})"
-  lore:
-    - "&7Kéo và thả phiếu này vào một"
-    - "&7vật phẩm có thời hạn để gia hạn."
-    - ""
-    - "&eThời gian cộng thêm: &a+{duration}"
-    - "&8&o(Nhấp chuột trái vào item để sử dụng)"
+
 ```
