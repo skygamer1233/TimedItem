@@ -1,0 +1,43 @@
+# ======================================================
+#       Cấu Hình TimedItem - Tiếng Việt (config_vi.yml)
+# ======================================================
+
+# Thiết lập ngôn ngữ hoạt động của plugin:
+#   "vi" : Sử dụng Tiếng Việt (nạp file lang_vi.yml)
+#   "en" : Sử dụng Tiếng Anh (nạp file lang_en.yml)
+# (Lưu ý: Dòng hiển thị Lore trên item và tên/lore Phiếu Gia Hạn
+#  được cấu hình trực tiếp trong file lang_vi.yml hoặc lang_en.yml)
+language: "vi"
+
+# Định dạng ngày giờ cho lệnh /ti set và hiển thị thời điểm hết hạn
+# Mặc định: dd/MM/yyyy HH:mm:ss
+date-format: "dd/MM/yyyy HH:mm:ss"
+
+# Chu kỳ kiểm tra vật phẩm hết hạn định kỳ (tính bằng giây)
+# Khuyến nghị: 30 đến 60 giây để tối ưu máy chủ
+check-interval: 30
+
+# Có kiểm tra và tự động dọn dẹp các vật phẩm hết hạn bị rơi trên mặt đất không
+world-check: true
+
+# Có kiểm tra túi đồ của người chơi đang online không
+inventory-check: true
+
+# Có tự động quét và xóa vật phẩm hết hạn trong túi đồ & Ender Chest
+# của người chơi đang OFFLINE không (Chạy bất đồng bộ 100%, 0% tụt TPS)
+offline-check: true
+
+# Số lượng lệnh hiển thị trên mỗi trang của bảng trợ giúp (/ti help)
+help-per-page: 7
+
+# Thiết lập kỹ thuật cho vật phẩm Phiếu Gia Hạn (Extension Tokens):
+# (Phần chữ hiển thị tên và lore của phiếu nằm trong lang_vi.yml / lang_en.yml)
+token:
+  # Loại vật phẩm đại diện cho phiếu (VD: PAPER, FEATHER, NETHER_STAR...)
+  material: PAPER
+
+  # Mã CustomModelData (dùng nếu server có cài Resource Pack, đặt 0 nếu không dùng)
+  custom-model-data: 0
+
+  # Hiệu ứng phát sáng phù phép (true: có phát sáng, false: không)
+  glow: true

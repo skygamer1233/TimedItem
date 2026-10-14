@@ -1,0 +1,43 @@
+# ======================================================
+#       TimedItem Configuration - English (config_en.yml)
+# ======================================================
+
+# Active language of the plugin:
+#   "en" : English (loads lang_en.yml)
+#   "vi" : Vietnamese (loads lang_vi.yml)
+# (Note: Item Lore formats and Token display text are configured
+#  directly inside lang_en.yml / lang_vi.yml)
+language: "en"
+
+# Date format for /ti set command and expiration timestamps
+# Default: dd/MM/yyyy HH:mm:ss
+date-format: "dd/MM/yyyy HH:mm:ss"
+
+# Periodic check interval for expired items (in seconds)
+# Recommended: 30 to 60 seconds for optimal performance
+check-interval: 30
+
+# Whether to automatically clear expired items dropped in the world
+world-check: true
+
+# Whether to check online player inventories
+inventory-check: true
+
+# Whether to scan and clean expired items from offline player
+# inventories and Ender Chests (100% Asynchronous, Zero TPS drop)
+offline-check: true
+
+# Number of commands displayed per page in /ti help
+help-per-page: 7
+
+# Technical settings for Time Extension Tokens:
+# (Display name and lore are localized in lang_en.yml / lang_vi.yml)
+token:
+  # Item material representing the token (e.g. PAPER, FEATHER, NETHER_STAR)
+  material: PAPER
+
+  # CustomModelData ID (useful for custom textures, 0 if disabled)
+  custom-model-data: 0
+
+  # Enchantment glow override effect (true/false)
+  glow: true

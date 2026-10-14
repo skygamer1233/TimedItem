@@ -1,0 +1,40 @@
+name: TimedItem
+version: 1.1.0
+main: me.timeditem.TimedItem
+api-version: '1.21'
+description: Advanced item expiration and duration management for Minecraft
+author: SkyGamer
+softdepend: [MMOItems, PlaceholderAPI]
+commands:
+  ti:
+    description: TimedItem main command
+    usage: /ti <add|remove|set|clear|check|givemmo|token|reload|help>
+    aliases: [timeditem]
+permissions:
+  timeditem.command.add:
+    description: Add duration to timed item
+    default: op
+  timeditem.command.remove:
+    description: Remove duration from timed item
+    default: op
+  timeditem.command.set:
+    description: Set exact expiration date or duration
+    default: op
+  timeditem.command.clear:
+    description: Clear expiration time from item
+    default: op
+  timeditem.command.check:
+    description: Check timed item in hand
+    default: true
+  timeditem.command.givemmo:
+    description: Give timed MMOItems item to a player
+    default: op
+  timeditem.command.token:
+    description: Create or give Time Extension Tokens
+    default: op
+  timeditem.command.reload:
+    description: Reload TimedItem configuration and languages
+    default: op
+  timeditem.command.help:
+    description: View command help
+    default: true
