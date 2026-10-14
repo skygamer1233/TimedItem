@@ -4,6 +4,8 @@ import me.timeditem.check.CheckManager;
 import me.timeditem.check.OfflinePlayerManager;
 import me.timeditem.command.TimedItemCommand;
 import me.timeditem.config.ConfigManager;
+import me.timeditem.hook.MMOItemsHook;
+import me.timeditem.hook.TimedItemExpansion;
 import me.timeditem.item.ItemManager;
 import me.timeditem.listener.PlayerListener;
 import org.bukkit.command.PluginCommand;
@@ -16,12 +18,13 @@ public class TimedItem extends JavaPlugin {
     private ItemManager itemManager;
     private OfflinePlayerManager offlinePlayerManager;
     private CheckManager checkManager;
+    private MMOItemsHook mmoItemsHook;
 
     @Override
     public void onEnable() {
         instance = this;
 
-        // Initialize configuration
+        // Initialize configuration & language
         this.configManager = new ConfigManager(this);
 
         // Initialize item manager
@@ -29,6 +32,18 @@ public class TimedItem extends JavaPlugin {
 
         // Initialize offline player manager
         this.offlinePlayerManager = new OfflinePlayerManager(this);
+
+        // Initialize MMOItems hook
+        this.mmoItemsHook = new MMOItemsHook(this);
+        if (mmoItemsHook.isAvailable()) {
+            getLogger().info("MMOItems detected and hooked successfully!");
+        }
+
+        // Initialize PlaceholderAPI hook
+        if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new TimedItemExpansion(this, configManager, itemManager).register();
+            getLogger().info("PlaceholderAPI expansion registered successfully!");
+        }
 
         // Initialize asynchronous & synchronous check manager
         this.checkManager = new CheckManager(this, configManager, itemManager, offlinePlayerManager);
@@ -84,5 +99,9 @@ public class TimedItem extends JavaPlugin {
 
     public CheckManager getCheckManager() {
         return checkManager;
+    }
+
+    public MMOItemsHook getMMOItemsHook() {
+        return mmoItemsHook;
     }
 }
