@@ -24,6 +24,8 @@ public class ItemManager {
     private final NamespacedKey expireKey;
     private final NamespacedKey durationKey;
     private final NamespacedKey loreKey;
+    private final NamespacedKey tokenKey;
+    private final NamespacedKey tokenDurationKey;
 
     public ItemManager(TimedItem plugin, ConfigManager configManager) {
         this.plugin = plugin;
@@ -31,6 +33,8 @@ public class ItemManager {
         this.expireKey = new NamespacedKey(plugin, "expire_time");
         this.durationKey = new NamespacedKey(plugin, "duration_time");
         this.loreKey = new NamespacedKey(plugin, "lore_line");
+        this.tokenKey = new NamespacedKey(plugin, "extension_token");
+        this.tokenDurationKey = new NamespacedKey(plugin, "token_duration");
     }
 
     public NamespacedKey getExpireKey() {
@@ -451,5 +455,83 @@ public class ItemManager {
         return Arrays.stream(materialName.split(" "))
                 .map(word -> word.isEmpty() ? word : Character.toUpperCase(word.charAt(0)) + word.substring(1))
                 .collect(Collectors.joining(" "));
+    }
+
+    public boolean isExtensionToken(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) {
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return false;
+        }
+        return meta.getPersistentDataContainer().has(tokenKey, PersistentDataType.BYTE);
+    }
+
+    public Long getTokenDuration(ItemStack item) {
+        if (!isExtensionToken(item)) {
+            return null;
+        }
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return null;
+        }
+        return meta.getPersistentDataContainer().get(tokenDurationKey, PersistentDataType.LONG);
+    }
+
+    public ItemStack createExtensionToken(long durationMillis, int amount) {
+        Material material = configManager.getTokenMaterial();
+        ItemStack token = new ItemStack(material, Math.max(1, amount));
+        ItemMeta meta = token.getItemMeta();
+        if (meta == null) {
+            return token;
+        }
+
+        if (configManager.getTokenCustomModelData() > 0) {
+            meta.setCustomModelData(configManager.getTokenCustomModelData());
+        }
+
+        if (configManager.isTokenGlow()) {
+            try {
+                meta.setEnchantmentGlintOverride(true);
+            } catch (Throwable ignored) {
+                meta.addEnchant(org.bukkit.enchantments.Enchantment.UNBREAKING, 1, true);
+                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            }
+        }
+
+        String formattedDuration = TimeParser.formatDuration(durationMillis);
+        String nameFormat = configManager.getTokenName();
+        if (nameFormat != null && !nameFormat.isEmpty()) {
+            meta.setDisplayName(ColorUtil.colorize(nameFormat.replace("{duration}", formattedDuration)));
+        }
+
+        List<String> rawLore = configManager.getTokenLore();
+        if (rawLore != null && !rawLore.isEmpty()) {
+            List<String> coloredLore = rawLore.stream()
+                    .map(line -> ColorUtil.colorize(line.replace("{duration}", formattedDuration)))
+                    .collect(Collectors.toList());
+            meta.setLore(coloredLore);
+        }
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        pdc.set(tokenKey, PersistentDataType.BYTE, (byte) 1);
+        pdc.set(tokenDurationKey, PersistentDataType.LONG, durationMillis);
+
+        token.setItemMeta(meta);
+        return token;
+    }
+
+    public String getStatusFormatted(ItemStack item) {
+        if (!isTimedItem(item)) {
+            return configManager.getStatusNone();
+        }
+        if (isExpired(item)) {
+            return configManager.getStatusExpired();
+        }
+        if (isInactiveTimedItem(item)) {
+            return configManager.getStatusInactive();
+        }
+        return configManager.getStatusActive();
     }
 }
