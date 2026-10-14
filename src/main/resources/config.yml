@@ -1,0 +1,37 @@
+# ======================================================
+#            TimedItem Configuration (v1.1.0)
+# ======================================================
+
+# Active language of the plugin:
+#   "en" : English (loads lang/lang_en.yml)
+#   "vi" : Vietnamese (loads lang/lang_vi.yml)
+# If set to "vi", reloading the plugin (/ti reload) will
+# automatically switch this configuration file to Vietnamese!
+language: "en"
+
+# Date format for commands and expiration display
+# Default: dd/MM/yyyy HH:mm:ss
+date-format: "dd/MM/yyyy HH:mm:ss"
+
+# How often to check for expired items (in seconds)
+# Affects both online inventory and world dropped checks
+check-interval: 30
+
+# Whether to check items dropped in the world
+world-check: true
+
+# Whether to check online player inventories
+inventory-check: true
+
+# Whether to check offline player inventories and Ender Chests (100% Async)
+offline-check: true
+
+# Number of items shown per help page (/ti help)
+help-per-page: 7
+
+# Technical settings for Extension Tokens (Phiếu Gia Hạn)
+# Display name & lore of tokens are localized in lang/lang_en.yml or lang/lang_vi.yml
+token:
+  material: PAPER
+  custom-model-data: 0
+  glow: true
