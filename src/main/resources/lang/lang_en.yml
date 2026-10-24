@@ -8,7 +8,7 @@ prefix: "&8[&6TimedItem&8] &r"
 item-expired: "&cItem &e{item} &cx{amount} &chas expired and was removed from your inventory!"
 items-expired-offline: "&eWhile you were offline, &c{count} &eitem(s) expired and were removed from your inventory!"
 item-activated: "&aItem &e{item} &ahas been activated! Expiration: &e{expiry}"
-duration-set: "&aSet validity duration &e{duration} &afor item (countdown starts when held in Survival mode)."
+duration-set: "&aSet validity duration &e{duration} &afor item (countdown starts when held in Survival/Adventure mode)."
 time-added: "&aAdded &e{time} &ato item. New expiration: &e{expiry}"
 time-removed: "&aRemoved &e{time} &afrom item. New expiration: &e{expiry}"
 time-set: "&aSet expiration to &e{expiry}&a."
@@ -25,7 +25,12 @@ reloaded: "&aConfiguration and language reloaded successfully! (Language: {lang}
 player-only: "&cThis command can only be executed by a player!"
 player-not-found: "&cPlayer &e{player} &cwas not found or is offline!"
 invalid-amount: "&cAmount must be a positive integer!"
+invalid-material: "&cInvalid Minecraft material: &e{material}&c!"
 usage: "&cUsage: {usage}"
+
+# Item give messages
+item-given: "&aGave &e{amount}x &a{item} (duration: &e{time}&a) to &e{player}&a!"
+item-received: "&aYou received &e{amount}x &a{item} (duration: &e{time}&a)!"
 
 # MMOItems integration messages
 mmo-not-installed: "&cMMOItems plugin is not installed or enabled on this server!"
@@ -78,6 +83,7 @@ help-commands:
   set: "&6/ti set <format> &7- Set exact expiration date or duration. &8(e.g. /ti set 12/07/2026)"
   clear: "&6/ti clear &7- Clear expiration time from held item."
   check: "&6/ti check &7- Inspect timed item in your hand."
+  give: "&6/ti give <player> <material> <time> [amount] &7- Give a timed vanilla item."
   givemmo: "&6/ti givemmo <player> <type> <id> <time> &7- Give a timed MMOItems item."
   token: "&6/ti token <time> [amount] [player] &7- Create/give Time Extension Token."
   reload: "&6/ti reload &7- Reload plugin configuration and languages."

@@ -8,7 +8,7 @@ prefix: "&8[&6TimedItem&8] &r"
 item-expired: "&cVật phẩm &e{item} &cx{amount} &cđã hết hạn và đã tự xoá khỏi kho!"
 items-expired-offline: "&eKhi bạn đang offline, có &c{count} &evật phẩm đã hết hạn và đã tự xoá khỏi kho!"
 item-activated: "&aVật phẩm &e{item} &ađã kích hoạt! Hạn sử dụng: &e{expiry}"
-duration-set: "&aĐã đặt thời gian hiệu lực &e{duration} &acho vật phẩm (sẽ tính giờ khi cầm trên tay ở chế độ sinh tồn)."
+duration-set: "&aĐã đặt thời gian hiệu lực &e{duration} &acho vật phẩm (sẽ tính giờ khi cầm trên tay ở chế độ Sinh tồn/Phiêu lưu)."
 time-added: "&aĐã thêm &e{time} &avào vật phẩm. Hạn sử dụng mới: &e{expiry}"
 time-removed: "&aĐã xoá &e{time} &akhỏi vật phẩm. Hạn sử dụng mới: &e{expiry}"
 time-set: "&aĐã set thời hạn thành &e{expiry}&a."
@@ -25,7 +25,12 @@ reloaded: "&aĐã nạp lại cấu hình và ngôn ngữ thành công! (Ngôn n
 player-only: "&cChỉ người chơi mới dùng được lệnh này!"
 player-not-found: "&cKhông tìm thấy người chơi &e{player}&c hoặc người chơi đang ngoại tuyến!"
 invalid-amount: "&cSố lượng phải là một số nguyên dương hợp lệ!"
+invalid-material: "&cLoại vật phẩm Minecraft không hợp lệ: &e{material}&c!"
 usage: "&cCách dùng: {usage}"
+
+# Item give messages
+item-given: "&aĐã tặng &e{amount}x &a{item} (thời hạn: &e{time}&a) cho &e{player}&a!"
+item-received: "&aBạn nhận được &e{amount}x &a{item} (thời hạn: &e{time}&a)!"
 
 # MMOItems integration messages
 mmo-not-installed: "&cPlugin MMOItems chưa được cài đặt hoặc chưa khởi động trên máy chủ!"
@@ -78,6 +83,7 @@ help-commands:
   set: "&6/ti set <format> &7- Đặt thời hạn hoặc ngày hết hạn. &8(vd: /ti set 12/07/2026)"
   clear: "&6/ti clear &7- Xoá hoàn toàn thời hạn khỏi vật phẩm."
   check: "&6/ti check &7- Kiểm tra chi tiết thời hạn vật phẩm trên tay."
+  give: "&6/ti give <player> <material> <time> [amount] &7- Tặng vật phẩm mặc định có thời hạn."
   givemmo: "&6/ti givemmo <player> <type> <id> <time> &7- Tặng item MMOItems có thời hạn."
   token: "&6/ti token <time> [amount] [player] &7- Tạo/tặng Phiếu Gia Hạn thời gian."
   reload: "&6/ti reload &7- Nạp lại plugin và cấu hình ngôn ngữ."
