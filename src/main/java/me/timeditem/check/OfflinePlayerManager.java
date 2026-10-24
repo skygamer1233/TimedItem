@@ -75,13 +75,20 @@ public class OfflinePlayerManager {
         return 0;
     }
 
+    private final Map<String, Long> lastScannedModified = new ConcurrentHashMap<>();
+
     /**
      * Scans offline player data files asynchronously and removes expired items.
+     * Thread-safe: worldFolder and onlineUUIDs must be captured on the main thread before dispatching.
+     *
+     * @param worldFolder the server world folder containing playerdata
+     * @param onlineUUIDs set of UUIDs of currently online players to skip
      */
-    public void scanOfflinePlayers() {
-        File worldFolder = Bukkit.getWorlds().isEmpty() ? new File("world") : Bukkit.getWorlds().get(0).getWorldFolder();
+    public void scanOfflinePlayers(File worldFolder, java.util.Set<UUID> onlineUUIDs) {
+        if (worldFolder == null) {
+            return;
+        }
         File playerDataFolder = new File(worldFolder, "playerdata");
-
         if (!playerDataFolder.exists() || !playerDataFolder.isDirectory()) {
             return;
         }
@@ -92,6 +99,7 @@ public class OfflinePlayerManager {
         }
 
         long now = System.currentTimeMillis();
+        boolean anyModified = false;
 
         for (File file : files) {
             String name = file.getName();
@@ -103,12 +111,25 @@ public class OfflinePlayerManager {
                 continue; // Not a valid UUID file
             }
 
-            // Skip online players - they will be checked in memory and saved properly by the server
-            if (Bukkit.getPlayer(uuid) != null) {
+            // Skip online players - they are checked live in memory
+            if (onlineUUIDs != null && onlineUUIDs.contains(uuid)) {
+                continue;
+            }
+
+            long lastMod = file.lastModified();
+            // Skip files touched in the last 5 minutes (player just logged off / server saving)
+            if (now - lastMod < 300_000L) {
+                continue;
+            }
+
+            // Skip files whose lastModified has not changed since our last scan
+            Long previousMod = lastScannedModified.get(name);
+            if (previousMod != null && previousMod == lastMod) {
                 continue;
             }
 
             try {
+                long modBeforeRead = file.lastModified();
                 NBTCompound root = NBTIO.readFile(file);
                 int removedCount = 0;
 
@@ -116,14 +137,39 @@ public class OfflinePlayerManager {
                 removedCount += removeExpiredFromList(root.getList("EnderItems"), now);
 
                 if (removedCount > 0) {
+                    // Race condition guard: verify file was not modified while parsing
+                    if (file.lastModified() != modBeforeRead) {
+                        plugin.getLogger().warning("Skipped saving offline data for " + uuid + " (file was modified during scan)");
+                        continue;
+                    }
+
                     NBTIO.writeFile(root, file);
-                    addOfflineExpired(uuid, removedCount);
+                    lastScannedModified.put(name, file.lastModified());
+                    offlineExpiredCounts.merge(uuid, removedCount, Integer::sum);
+                    anyModified = true;
                     plugin.getLogger().info("Removed " + removedCount + " expired item(s) from offline player " + uuid);
+                } else {
+                    lastScannedModified.put(name, lastMod);
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(Level.WARNING, "Failed to process offline player data for " + uuidStr, e);
             }
         }
+
+        // Batch save all recorded counts once at the end of the scan cycle
+        if (anyModified) {
+            saveData();
+        }
+    }
+
+    public void scanOfflinePlayers() {
+        // Fallback for direct invocations (captures Bukkit state safely)
+        File worldFolder = Bukkit.getWorlds().isEmpty() ? new File("world") : Bukkit.getWorlds().get(0).getWorldFolder();
+        java.util.Set<UUID> onlineUUIDs = new java.util.HashSet<>();
+        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+            onlineUUIDs.add(p.getUniqueId());
+        }
+        scanOfflinePlayers(worldFolder, onlineUUIDs);
     }
 
     private int removeExpiredFromList(NBTList list, long now) {
