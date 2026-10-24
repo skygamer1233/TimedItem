@@ -13,9 +13,23 @@ language: "en"
 # Default: dd/MM/yyyy HH:mm:ss
 date-format: "dd/MM/yyyy HH:mm:ss"
 
-# Periodic check interval for expired items (in seconds)
-# Recommended: 30 to 60 seconds for optimal performance
+# Maximum duration allowed for an item (e.g. 365d, 3650d)
+# Prevents arithmetic overflow when adding time to items
+max-duration: "3650d"
+
+# Periodic check interval for online player inventories & worlds (in seconds)
+# Recommended: 30 to 60 seconds
 check-interval: 30
+
+# Fast equipment check interval (in seconds)
+# Checks armor & held items every X seconds to immediately remove expired gear
+equipment-check-interval: 2
+
+# Game modes where inactive timed items are automatically activated
+# Countdown begins only when held or stored in these game modes
+activation-gamemodes:
+  - SURVIVAL
+  - ADVENTURE
 
 # Whether to automatically clear expired items dropped in the world
 world-check: true
@@ -23,9 +37,19 @@ world-check: true
 # Whether to check online player inventories
 inventory-check: true
 
-# Whether to scan and clean expired items from offline player
-# inventories and Ender Chests (100% Asynchronous, Zero TPS drop)
-offline-check: true
+# Whether to check inside containers (Shulker Boxes, Bundles) for expired items
+container-check: true
+
+# Offline player scanning:
+# Scans offline playerdata files (.dat) asynchronously.
+# NOTE: It is recommended to leave this FALSE unless strictly necessary,
+# because TimedItem already checks and removes expired items automatically
+# when a player joins the server.
+offline-check: false
+
+# How often to run the offline playerdata scan (in seconds)
+# Default: 1800 (every 30 minutes). Only active if offline-check is true.
+offline-check-interval: 1800
 
 # Number of commands displayed per page in /ti help
 help-per-page: 7

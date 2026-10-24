@@ -13,9 +13,23 @@ language: "vi"
 # Mặc định: dd/MM/yyyy HH:mm:ss
 date-format: "dd/MM/yyyy HH:mm:ss"
 
+# Thời gian tối đa cho phép của một item (vd: 365d, 3650d)
+# Ngăn chặn lỗi tràn số khi cộng dồn thời hạn quá lớn
+max-duration: "3650d"
+
 # Chu kỳ kiểm tra vật phẩm hết hạn định kỳ (tính bằng giây)
 # Khuyến nghị: 30 đến 60 giây để tối ưu máy chủ
 check-interval: 30
+
+# Chu kỳ quét nhanh các ô trang bị (tính bằng giây)
+# Quét giáp và item trên tay mỗi X giây để lập tức thu hồi đồ hết hạn
+equipment-check-interval: 2
+
+# Chế độ chơi (GameMode) sẽ tự động kích hoạt tính giờ cho item
+# Thời gian chỉ bắt đầu đếm ngược khi người chơi ở các chế độ này
+activation-gamemodes:
+  - SURVIVAL
+  - ADVENTURE
 
 # Có kiểm tra và tự động dọn dẹp các vật phẩm hết hạn bị rơi trên mặt đất không
 world-check: true
@@ -23,9 +37,18 @@ world-check: true
 # Có kiểm tra túi đồ của người chơi đang online không
 inventory-check: true
 
-# Có tự động quét và xóa vật phẩm hết hạn trong túi đồ & Ender Chest
-# của người chơi đang OFFLINE không (Chạy bất đồng bộ 100%, 0% tụt TPS)
-offline-check: true
+# Có kiểm tra bên trong vật phẩm chứa đồ (Hộp Shulker, Bundle) không
+container-check: true
+
+# Quét người chơi ngoại tuyến (Offline):
+# Quét các file playerdata (.dat) bất đồng bộ.
+# LƯU Ý: Khuyến nghị để FALSE trừ khi thực sự cần thiết,
+# vì TimedItem đã tự động kiểm tra và xóa item hết hạn khi người chơi đăng nhập.
+offline-check: false
+
+# Chu kỳ quét file playerdata offline (tính bằng giây)
+# Mặc định: 1800 (mỗi 30 phút). Chỉ hoạt động khi offline-check là true.
+offline-check-interval: 1800
 
 # Số lượng lệnh hiển thị trên mỗi trang của bảng trợ giúp (/ti help)
 help-per-page: 7

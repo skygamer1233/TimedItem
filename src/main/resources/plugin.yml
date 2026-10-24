@@ -8,9 +8,28 @@ softdepend: [MMOItems, PlaceholderAPI]
 commands:
   ti:
     description: TimedItem main command
-    usage: /ti <add|remove|set|clear|check|givemmo|token|reload|help>
+    usage: /ti <add|remove|set|clear|check|give|givemmo|token|reload|help>
     aliases: [timeditem]
 permissions:
+  timeditem.*:
+    description: Gives full access to all TimedItem commands and permissions
+    default: op
+    children:
+      timeditem.admin: true
+  timeditem.admin:
+    description: Gives access to all administrative commands
+    default: op
+    children:
+      timeditem.command.add: true
+      timeditem.command.remove: true
+      timeditem.command.set: true
+      timeditem.command.clear: true
+      timeditem.command.check: true
+      timeditem.command.give: true
+      timeditem.command.givemmo: true
+      timeditem.command.token: true
+      timeditem.command.reload: true
+      timeditem.command.help: true
   timeditem.command.add:
     description: Add duration to timed item
     default: op
@@ -26,6 +45,9 @@ permissions:
   timeditem.command.check:
     description: Check timed item in hand
     default: true
+  timeditem.command.give:
+    description: Give timed vanilla item to a player
+    default: op
   timeditem.command.givemmo:
     description: Give timed MMOItems item to a player
     default: op
