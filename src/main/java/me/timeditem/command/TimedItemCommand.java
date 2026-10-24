@@ -8,6 +8,7 @@ import me.timeditem.util.ColorUtil;
 import me.timeditem.util.DateParser;
 import me.timeditem.util.TimeParser;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -56,6 +57,8 @@ public class TimedItemCommand implements CommandExecutor, TabCompleter {
                 configManager.getHelpCommandMessage("clear", "&6/ti clear &7- Xoá thời hạn khỏi vật phẩm.")));
         helpEntries.add(new HelpEntry("timeditem.command.check",
                 configManager.getHelpCommandMessage("check", "&6/ti check &7- Kiểm tra thời hạn vật phẩm trên tay.")));
+        helpEntries.add(new HelpEntry("timeditem.command.give",
+                configManager.getHelpCommandMessage("give", "&6/ti give <player> <material> <time> [amount] &7- Tặng vật phẩm mặc định có thời hạn.")));
         helpEntries.add(new HelpEntry("timeditem.command.givemmo",
                 configManager.getHelpCommandMessage("givemmo", "&6/ti givemmo <player> <type> <id> <time> &7- Tặng item MMOItems có thời hạn.")));
         helpEntries.add(new HelpEntry("timeditem.command.token",
@@ -89,6 +92,9 @@ public class TimedItemCommand implements CommandExecutor, TabCompleter {
             case "check" -> {
                 return handleCheck(sender);
             }
+            case "give" -> {
+                return handleGive(sender, args);
+            }
             case "givemmo" -> {
                 return handleGiveMMO(sender, args);
             }
@@ -109,7 +115,7 @@ public class TimedItemCommand implements CommandExecutor, TabCompleter {
                 return handleHelp(sender, page);
             }
             default -> {
-                sender.sendMessage(configManager.getMessage("usage").replace("{usage}", "/ti <add|remove|set|clear|check|givemmo|token|reload|help>"));
+                sender.sendMessage(configManager.getMessage("usage").replace("{usage}", "/ti <add|remove|set|clear|check|give|givemmo|token|reload|help>"));
                 return true;
             }
         }
@@ -377,6 +383,91 @@ public class TimedItemCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    private boolean handleGive(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("timeditem.command.give")) {
+            sender.sendMessage(configManager.getMessage("no-permission"));
+            return true;
+        }
+
+        if (args.length < 4) {
+            sender.sendMessage(configManager.getMessage("usage").replace("{usage}", "/ti give <player> <material> <time> [amount] (vd: /ti give Steve DIAMOND_SWORD 7d 1)"));
+            return true;
+        }
+
+        Player target = Bukkit.getPlayerExact(args[1]);
+        if (target == null) {
+            target = Bukkit.getPlayer(args[1]);
+        }
+        if (target == null) {
+            sender.sendMessage(configManager.getMessage("player-not-found").replace("{player}", args[1]));
+            return true;
+        }
+
+        String matName = args[2].toUpperCase();
+        org.bukkit.Material material = org.bukkit.Material.matchMaterial(matName);
+        if (material == null || !material.isItem() || material.isAir()) {
+            sender.sendMessage(configManager.getMessage("invalid-material").replace("{material}", args[2]));
+            return true;
+        }
+
+        long duration;
+        try {
+            duration = TimeParser.parseDuration(args[3]);
+        } catch (IllegalArgumentException e) {
+            sender.sendMessage(configManager.getMessage("invalid-time-format"));
+            return true;
+        }
+
+        int amount = 1;
+        if (args.length >= 5) {
+            try {
+                amount = Integer.parseInt(args[4]);
+                if (amount <= 0) {
+                    sender.sendMessage(configManager.getMessage("invalid-amount"));
+                    return true;
+                }
+            } catch (NumberFormatException e) {
+                sender.sendMessage(configManager.getMessage("invalid-amount"));
+                return true;
+            }
+        }
+
+        ItemStack item = new ItemStack(material, amount);
+        itemManager.setInactiveDuration(item, duration);
+        if (configManager.isActivationGameMode(target.getGameMode())) {
+            itemManager.activateTimedItem(target, item, false);
+        }
+
+        HashMap<Integer, ItemStack> leftover = target.getInventory().addItem(item);
+        if (!leftover.isEmpty()) {
+            for (ItemStack drop : leftover.values()) {
+                target.getWorld().dropItemNaturally(target.getLocation(), drop);
+            }
+            target.sendMessage(configManager.getMessage("inventory-full-dropped").replace("{player}", target.getName()));
+        }
+
+        String formattedDuration = TimeParser.formatDuration(duration);
+        String displayName = itemManager.getItemDisplayName(item);
+
+        sender.sendMessage(configManager.getMessage("item-given")
+                .replace("{item}", displayName)
+                .replace("{amount}", String.valueOf(amount))
+                .replace("{time}", formattedDuration)
+                .replace("{player}", target.getName()));
+
+        target.sendMessage(configManager.getMessage("item-received")
+                .replace("{item}", displayName)
+                .replace("{amount}", String.valueOf(amount))
+                .replace("{time}", formattedDuration));
+
+        try {
+            target.playSound(target.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.0f, 1.2f);
+        } catch (Exception ignored) {
+        }
+
+        return true;
+    }
+
     private boolean handleGiveMMO(CommandSender sender, String[] args) {
         if (!sender.hasPermission("timeditem.command.givemmo")) {
             sender.sendMessage(configManager.getMessage("no-permission"));
@@ -422,7 +513,7 @@ public class TimedItemCommand implements CommandExecutor, TabCompleter {
         }
 
         itemManager.setInactiveDuration(item, duration);
-        if (target.getGameMode() == org.bukkit.GameMode.SURVIVAL) {
+        if (configManager.isActivationGameMode(target.getGameMode())) {
             itemManager.activateTimedItem(target, item, false);
         }
 
@@ -634,6 +725,7 @@ public class TimedItemCommand implements CommandExecutor, TabCompleter {
             if (sender.hasPermission("timeditem.command.set")) subcommands.add("set");
             if (sender.hasPermission("timeditem.command.clear")) subcommands.add("clear");
             if (sender.hasPermission("timeditem.command.check")) subcommands.add("check");
+            if (sender.hasPermission("timeditem.command.give")) subcommands.add("give");
             if (sender.hasPermission("timeditem.command.givemmo")) subcommands.add("givemmo");
             if (sender.hasPermission("timeditem.command.token")) subcommands.add("token");
             if (sender.hasPermission("timeditem.command.reload")) subcommands.add("reload");
@@ -657,7 +749,8 @@ public class TimedItemCommand implements CommandExecutor, TabCompleter {
             if (sub.equals("help") && sender.hasPermission("timeditem.command.help")) {
                 return filterCompletions(Arrays.asList("1", "2"), args[1]);
             }
-            if (sub.equals("givemmo") && sender.hasPermission("timeditem.command.givemmo")) {
+            if ((sub.equals("give") && sender.hasPermission("timeditem.command.give")) ||
+                (sub.equals("givemmo") && sender.hasPermission("timeditem.command.givemmo"))) {
                 List<String> players = new ArrayList<>();
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     players.add(p.getName());
@@ -674,6 +767,15 @@ public class TimedItemCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 3) {
+            if (sub.equals("give") && sender.hasPermission("timeditem.command.give")) {
+                List<String> materials = new ArrayList<>();
+                for (org.bukkit.Material m : org.bukkit.Material.values()) {
+                    if (m.isItem() && !m.isAir()) {
+                        materials.add(m.name());
+                    }
+                }
+                return filterCompletions(materials, args[2]);
+            }
             if (sub.equals("givemmo") && sender.hasPermission("timeditem.command.givemmo")) {
                 List<String> types = plugin.getMMOItemsHook().getTypes();
                 if (types.isEmpty()) {
@@ -691,6 +793,9 @@ public class TimedItemCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 4) {
+            if (sub.equals("give") && sender.hasPermission("timeditem.command.give")) {
+                return filterCompletions(Arrays.asList("1h", "1d", "3d", "7d", "30d"), args[3]);
+            }
             if (sub.equals("givemmo") && sender.hasPermission("timeditem.command.givemmo")) {
                 List<String> ids = plugin.getMMOItemsHook().getTemplateIds(args[2]);
                 return filterCompletions(ids, args[3]);
@@ -709,6 +814,9 @@ public class TimedItemCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 5) {
+            if (sub.equals("give") && sender.hasPermission("timeditem.command.give")) {
+                return filterCompletions(Arrays.asList("1", "16", "32", "64"), args[4]);
+            }
             if (sub.equals("givemmo") && sender.hasPermission("timeditem.command.givemmo")) {
                 return filterCompletions(Arrays.asList("1h", "1d", "3d", "7d", "30d"), args[4]);
             }
