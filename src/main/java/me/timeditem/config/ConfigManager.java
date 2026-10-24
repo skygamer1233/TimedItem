@@ -2,6 +2,7 @@ package me.timeditem.config;
 
 import me.timeditem.TimedItem;
 import me.timeditem.util.ColorUtil;
+import me.timeditem.util.TimeParser;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,12 +19,18 @@ public class ConfigManager {
     private FileConfiguration config;
     private FileConfiguration langConfig;
 
+    private String currentLoadedLanguage = null;
     private String language;
     private String dateFormat;
     private int checkInterval;
+    private int offlineCheckInterval;
+    private int equipmentCheckInterval;
+    private long maxDurationMillis;
     private boolean worldCheck;
     private boolean inventoryCheck;
     private boolean offlineCheck;
+    private boolean containerCheck;
+    private final java.util.Set<org.bukkit.GameMode> activationGameModes = java.util.EnumSet.noneOf(org.bukkit.GameMode.class);
     private int helpPerPage;
     private String loreFormat;
     private String loreInactiveFormat;
@@ -46,10 +53,17 @@ public class ConfigManager {
 
         // Read active language from disk (default: "en")
         YamlConfiguration tempConfig = YamlConfiguration.loadConfiguration(configFile);
-        this.language = tempConfig.getString("language", "en").toLowerCase();
+        String diskLang = tempConfig.getString("language", "en").toLowerCase();
 
-        // Synchronize config.yml comments and structure with config_vi.yml or config_en.yml
-        ConfigUpdater.syncConfigLanguage(plugin, configFile, this.language);
+        // If the language was explicitly changed by admin, sync comments & structure
+        if (this.currentLoadedLanguage != null && !this.currentLoadedLanguage.equalsIgnoreCase(diskLang)) {
+            ConfigUpdater.syncConfigLanguage(plugin, configFile, diskLang);
+        } else {
+            // Standard reload: merge missing keys while preserving admin comments
+            ConfigUpdater.update(plugin, "config.yml", configFile);
+        }
+        this.language = diskLang;
+        this.currentLoadedLanguage = diskLang;
 
         // Reload Bukkit plugin config
         plugin.reloadConfig();
@@ -60,22 +74,48 @@ public class ConfigManager {
 
         this.dateFormat = config.getString("date-format", "dd/MM/yyyy HH:mm:ss");
         this.checkInterval = config.getInt("check-interval", 30);
+        this.offlineCheckInterval = Math.max(10, config.getInt("offline-check-interval", 1800));
+        this.equipmentCheckInterval = Math.max(1, config.getInt("equipment-check-interval", 2));
         this.worldCheck = config.getBoolean("world-check", true);
         this.inventoryCheck = config.getBoolean("inventory-check", true);
-        this.offlineCheck = config.getBoolean("offline-check", true);
+        this.offlineCheck = config.getBoolean("offline-check", false);
+        this.containerCheck = config.getBoolean("container-check", true);
         this.helpPerPage = config.getInt("help-per-page", 7);
 
-        // Allow language files to override lore formats if defined there
+        // Parse max duration
+        String maxDurStr = config.getString("max-duration", "3650d");
+        try {
+            this.maxDurationMillis = TimeParser.parseDuration(maxDurStr);
+        } catch (Exception e) {
+            this.maxDurationMillis = 3650L * 86400000L;
+        }
+
+        // Parse activation gamemodes
+        this.activationGameModes.clear();
+        List<String> gmList = config.getStringList("activation-gamemodes");
+        if (gmList.isEmpty()) {
+            this.activationGameModes.add(org.bukkit.GameMode.SURVIVAL);
+            this.activationGameModes.add(org.bukkit.GameMode.ADVENTURE);
+        } else {
+            for (String gmName : gmList) {
+                try {
+                    this.activationGameModes.add(org.bukkit.GameMode.valueOf(gmName.toUpperCase()));
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+        }
+
+        // Allow language files to provide lore formats
         if (langConfig.contains("lore-format")) {
             this.loreFormat = langConfig.getString("lore-format");
         } else {
-            this.loreFormat = config.getString("lore-format", "&cHết hạn vào: &e{expiry}");
+            this.loreFormat = config.getString("lore-format", "&cExpires at: &e{expiry}");
         }
 
         if (langConfig.contains("lore-inactive-format")) {
             this.loreInactiveFormat = langConfig.getString("lore-inactive-format");
         } else {
-            this.loreInactiveFormat = config.getString("lore-inactive-format", "&eHiệu lực: &a{duration}");
+            this.loreInactiveFormat = config.getString("lore-inactive-format", "&eDuration: &a{duration}");
         }
 
         // Token settings
@@ -89,7 +129,7 @@ public class ConfigManager {
         if (langConfig.contains("token-name")) {
             this.tokenName = langConfig.getString("token-name");
         } else {
-            this.tokenName = config.getString("token.name", "&6&lPhiếu Gia Hạn &7(+{duration})");
+            this.tokenName = config.getString("token.name", "&6&lExtension Token &7(+{duration})");
         }
 
         if (langConfig.contains("token-lore")) {
@@ -98,11 +138,10 @@ public class ConfigManager {
             this.tokenLore = config.getStringList("token.lore");
         } else {
             this.tokenLore = Arrays.asList(
-                    "&7Kéo và thả phiếu này vào một",
-                    "&7vật phẩm có thời hạn để gia hạn.",
+                    "&7Drag and drop this token onto a timed item",
+                    "&7to extend its duration.",
                     "",
-                    "&eThời gian cộng thêm: &a+{duration}",
-                    "&8&o(Nhấp chuột trái vào item để sử dụng)"
+                    "&eDuration: &a+{duration}"
             );
         }
     }
@@ -294,6 +333,27 @@ public class ConfigManager {
 
     public boolean isOfflineCheckEnabled() {
         return offlineCheck;
+    }
+
+    public int getOfflineCheckInterval() {
+        return Math.max(10, offlineCheckInterval);
+    }
+
+    public int getEquipmentCheckInterval() {
+        return Math.max(1, equipmentCheckInterval);
+    }
+
+    public long getMaxDurationMillis() {
+        return maxDurationMillis;
+    }
+
+    public boolean isActivationGameMode(org.bukkit.GameMode mode) {
+        if (mode == null) return false;
+        return activationGameModes.contains(mode);
+    }
+
+    public boolean isContainerCheckEnabled() {
+        return containerCheck;
     }
 
     public int getHelpPerPage() {
