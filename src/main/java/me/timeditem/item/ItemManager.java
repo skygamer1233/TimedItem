@@ -45,11 +45,41 @@ public class ItemManager {
         return durationKey;
     }
 
+    public record TimedData(boolean isTimed, boolean isInactive, Long expireTime, Long duration) {
+        public boolean isExpired() {
+            return expireTime != null && System.currentTimeMillis() >= expireTime;
+        }
+    }
+
+    public TimedData getTimedData(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) {
+            return new TimedData(false, false, null, null);
+        }
+        ItemMeta meta = item.getItemMeta();
+        return getTimedData(meta);
+    }
+
+    public TimedData getTimedData(ItemMeta meta) {
+        if (meta == null) {
+            return new TimedData(false, false, null, null);
+        }
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        Long expire = pdc.get(expireKey, PersistentDataType.LONG);
+        Long duration = pdc.get(durationKey, PersistentDataType.LONG);
+        boolean isTimed = expire != null || duration != null;
+        boolean isInactive = duration != null;
+        return new TimedData(isTimed, isInactive, expire, duration);
+    }
+
     public boolean isTimedItem(ItemStack item) {
         if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) {
             return false;
         }
         ItemMeta meta = item.getItemMeta();
+        return isTimedItem(meta);
+    }
+
+    public boolean isTimedItem(ItemMeta meta) {
         if (meta == null) {
             return false;
         }
@@ -62,6 +92,10 @@ public class ItemManager {
             return false;
         }
         ItemMeta meta = item.getItemMeta();
+        return isInactiveTimedItem(meta);
+    }
+
+    public boolean isInactiveTimedItem(ItemMeta meta) {
         if (meta == null) {
             return false;
         }
@@ -69,7 +103,7 @@ public class ItemManager {
     }
 
     public Long getInactiveDuration(ItemStack item) {
-        if (!isInactiveTimedItem(item)) {
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) {
             return null;
         }
         ItemMeta meta = item.getItemMeta();
@@ -91,8 +125,19 @@ public class ItemManager {
     }
 
     public boolean isExpired(ItemStack item) {
-        Long expireTime = getExpireTime(item);
-        return expireTime != null && System.currentTimeMillis() >= expireTime;
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) {
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        return isExpired(meta, System.currentTimeMillis());
+    }
+
+    public boolean isExpired(ItemMeta meta, long currentTime) {
+        if (meta == null) {
+            return false;
+        }
+        Long expireTime = meta.getPersistentDataContainer().get(expireKey, PersistentDataType.LONG);
+        return expireTime != null && currentTime >= expireTime;
     }
 
     public void setInactiveDuration(ItemStack item, long durationMillis) {
@@ -121,6 +166,17 @@ public class ItemManager {
             return;
         }
 
+        long maxDur = configManager.getMaxDurationMillis();
+        long maxAllowed;
+        try {
+            maxAllowed = Math.addExact(System.currentTimeMillis(), maxDur);
+        } catch (ArithmeticException e) {
+            maxAllowed = Long.MAX_VALUE;
+        }
+        if (expireTime > maxAllowed) {
+            expireTime = maxAllowed;
+        }
+
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         pdc.set(expireKey, PersistentDataType.LONG, expireTime);
         pdc.remove(durationKey);
@@ -137,7 +193,7 @@ public class ItemManager {
         if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) {
             return false;
         }
-        if (player.getGameMode() != org.bukkit.GameMode.SURVIVAL) {
+        if (!configManager.isActivationGameMode(player.getGameMode())) {
             return false;
         }
         if (!isInactiveTimedItem(item)) {
@@ -179,7 +235,7 @@ public class ItemManager {
     }
 
     public int activatePlayerInventory(org.bukkit.entity.Player player) {
-        if (player == null || !player.isOnline() || player.getGameMode() != org.bukkit.GameMode.SURVIVAL) {
+        if (player == null || !player.isOnline() || !configManager.isActivationGameMode(player.getGameMode())) {
             return 0;
         }
 
@@ -198,23 +254,156 @@ public class ItemManager {
     }
 
     public long addExpireTime(ItemStack item, long durationMillis) {
+        long maxDur = configManager.getMaxDurationMillis();
+        durationMillis = Math.min(durationMillis, maxDur);
+
         if (isInactiveTimedItem(item)) {
             Long current = getInactiveDuration(item);
-            long newDuration = (current != null ? current : 0L) + durationMillis;
+            long base = (current != null ? current : 0L);
+            long newDuration;
+            try {
+                newDuration = Math.addExact(base, durationMillis);
+            } catch (ArithmeticException e) {
+                newDuration = maxDur;
+            }
+            newDuration = Math.min(newDuration, maxDur);
             setInactiveDuration(item, newDuration);
             return newDuration;
         }
 
         Long current = getExpireTime(item);
         if (current != null) {
-            long newExpiry = current + durationMillis;
+            long maxAllowedExpiry;
+            try {
+                maxAllowedExpiry = Math.addExact(System.currentTimeMillis(), maxDur);
+            } catch (ArithmeticException e) {
+                maxAllowedExpiry = Long.MAX_VALUE;
+            }
+
+            long newExpiry;
+            try {
+                newExpiry = Math.addExact(current, durationMillis);
+            } catch (ArithmeticException e) {
+                newExpiry = maxAllowedExpiry;
+            }
+            if (newExpiry > maxAllowedExpiry) {
+                newExpiry = maxAllowedExpiry;
+            }
             setExpireTime(item, newExpiry);
             return newExpiry;
         }
 
-        // Newly added item: set as inactive duration waiting for survival activation!
+        // Newly added item: set as inactive duration waiting for survival/adventure activation!
         setInactiveDuration(item, durationMillis);
         return durationMillis;
+    }
+
+    /**
+     * Inspects container items (Shulker boxes, Bundles) and removes any expired items inside.
+     *
+     * @param item the container ItemStack to inspect
+     * @return the total number of expired items removed from inside the container
+     */
+    public int cleanContainers(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) {
+            return 0;
+        }
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return 0;
+        }
+        int removed = 0;
+        long now = System.currentTimeMillis();
+
+        // 1. BlockStateMeta: Shulker Boxes, Chests, Barrels
+        if (meta instanceof org.bukkit.inventory.meta.BlockStateMeta bsm) {
+            if (bsm.hasBlockState() && bsm.getBlockState() instanceof org.bukkit.block.Container container) {
+                org.bukkit.inventory.Inventory inv = container.getInventory();
+                ItemStack[] contents = inv.getContents();
+                boolean modified = false;
+                for (int i = 0; i < contents.length; i++) {
+                    ItemStack sub = contents[i];
+                    if (sub != null && sub.getType() != Material.AIR && sub.hasItemMeta()) {
+                        ItemMeta subMeta = sub.getItemMeta();
+                        if (subMeta != null && isExpired(subMeta, now)) {
+                            inv.setItem(i, null);
+                            removed += sub.getAmount();
+                            modified = true;
+                        }
+                    }
+                }
+                if (modified) {
+                    bsm.setBlockState(container);
+                    item.setItemMeta(bsm);
+                }
+            }
+        }
+
+        // 2. BundleMeta: Bundles in 1.21
+        if (meta instanceof org.bukkit.inventory.meta.BundleMeta bundleMeta) {
+            List<ItemStack> bundleItems = bundleMeta.getItems();
+            if (bundleItems != null && !bundleItems.isEmpty()) {
+                List<ItemStack> newItems = new ArrayList<>();
+                boolean modified = false;
+                for (ItemStack sub : bundleItems) {
+                    if (sub != null && sub.getType() != Material.AIR && sub.hasItemMeta()) {
+                        ItemMeta subMeta = sub.getItemMeta();
+                        if (subMeta != null && isExpired(subMeta, now)) {
+                            removed += sub.getAmount();
+                            modified = true;
+                            continue;
+                        }
+                    }
+                    newItems.add(sub);
+                }
+                if (modified) {
+                    bundleMeta.setItems(newItems);
+                    item.setItemMeta(bundleMeta);
+                }
+            }
+        }
+
+        return removed;
+    }
+
+    /**
+     * Checks if a timed item is missing its lore (e.g. wiped by MMOItems updater)
+     * and restores the expiration lore if PDC data exists.
+     *
+     * @param item the item to verify
+     * @return true if lore was restored, false otherwise
+     */
+    public boolean ensureTimedLore(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) {
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return false;
+        }
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        Long expire = pdc.get(expireKey, PersistentDataType.LONG);
+        Long duration = pdc.get(durationKey, PersistentDataType.LONG);
+        if (expire == null && duration == null) {
+            return false;
+        }
+
+        String savedLore = pdc.get(loreKey, PersistentDataType.STRING);
+        List<String> lore = meta.getLore();
+        boolean needsUpdate = (lore == null || lore.isEmpty())
+                || (savedLore != null && !lore.contains(savedLore));
+
+        if (needsUpdate) {
+            if (expire != null) {
+                updateLore(meta, expire);
+            } else if (duration != null) {
+                updateInactiveLore(meta, duration);
+            }
+            item.setItemMeta(meta);
+            return true;
+        }
+        return false;
     }
 
     public Long removeExpireTime(ItemStack item, long durationMillis) {
