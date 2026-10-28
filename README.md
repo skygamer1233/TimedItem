@@ -6,6 +6,7 @@
   <img src="https://img.shields.io/badge/Version-1.2.0-blue.svg" alt="Plugin Version" />
   <img src="https://img.shields.io/badge/Hooks-MMOItems%20%7C%20ItemsAdder%20%7C%20Oraxen%20%7C%20Nexo%20%7C%20EI-purple.svg" alt="Custom Item Hooks" />
   <img src="https://img.shields.io/badge/PlaceholderAPI-Supported-yellow.svg" alt="PAPI Hook" />
+  <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3" />
 </p>
 
 **TimedItem** is a high-performance, feature-packed Spigot/Paper plugin designed for Minecraft servers running **1.21+** (Java 21). It allows server administrators and creators to assign temporary validity or exact expiration dates to any in-game item — whether vanilla Minecraft, saved templates, or custom items from **MMOItems**, **ItemsAdder**, **Oraxen**, **Nexo**, or **ExecutableItems**.
@@ -88,3 +89,9 @@
 * **Java:** 21 or higher.
 * **Server Software:** Spigot, Paper, Purpur 1.21.1+.
 * **Build Tool:** Maven (`mvn clean package`). Output jar located at `target/TimedItem-1.2.0.jar`.
+
+---
+
+## 📄 License
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)** — see the [LICENSE](LICENSE) file for details.
+
