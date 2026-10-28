@@ -1,6 +1,7 @@
 package me.timeditem.check;
 
 import me.timeditem.TimedItem;
+import me.timeditem.item.ExpireAction;
 import me.timeditem.nbt.NBTCompound;
 import me.timeditem.nbt.NBTIO;
 import me.timeditem.nbt.NBTList;
@@ -187,6 +188,13 @@ public class OfflinePlayerManager {
 
             Long expireTime = extractExpireTime(itemCompound);
             if (expireTime != null && now >= expireTime) {
+                ExpireAction defaultAction = (plugin.getConfigManager() != null)
+                        ? plugin.getConfigManager().getDefaultExpireAction()
+                        : ExpireAction.DELETE;
+                ExpireAction itemAction = extractExpireAction(itemCompound, defaultAction);
+                if (itemAction == ExpireAction.SEAL) {
+                    continue; // SEAL items are preserved and sealed when player joins
+                }
                 iterator.remove();
                 removed++;
             }
@@ -195,36 +203,43 @@ public class OfflinePlayerManager {
         return removed;
     }
 
+    private ExpireAction extractExpireAction(NBTCompound itemCompound, ExpireAction fallback) {
+        NBTCompound pbv = getPublicBukkitValues(itemCompound);
+        if (pbv != null) {
+            String raw = pbv.getString("timeditem:expire_action");
+            return ExpireAction.fromString(raw, fallback);
+        }
+        return fallback;
+    }
+
     private Long extractExpireTime(NBTCompound itemCompound) {
-        // Modern 1.20.5+ / 1.21: components -> minecraft:custom_data -> PublicBukkitValues -> timeditem:expire_time
+        NBTCompound pbv = getPublicBukkitValues(itemCompound);
+        return pbv != null ? pbv.getLong("timeditem:expire_time") : null;
+    }
+
+    private NBTCompound getPublicBukkitValues(NBTCompound itemCompound) {
+        // Modern 1.20.5+ / 1.21: components -> minecraft:custom_data -> PublicBukkitValues
         NBTCompound components = itemCompound.getCompound("components");
         if (components != null) {
             NBTCompound customData = components.getCompound("minecraft:custom_data");
             if (customData != null) {
                 NBTCompound publicBukkitValues = customData.getCompound("PublicBukkitValues");
                 if (publicBukkitValues != null) {
-                    Long expire = publicBukkitValues.getLong("timeditem:expire_time");
-                    if (expire != null) return expire;
+                    return publicBukkitValues;
                 }
             }
         }
 
-        // Legacy: tag -> PublicBukkitValues -> timeditem:expire_time
+        // Legacy: tag -> PublicBukkitValues
         NBTCompound legacyTag = itemCompound.getCompound("tag");
         if (legacyTag != null) {
             NBTCompound publicBukkitValues = legacyTag.getCompound("PublicBukkitValues");
             if (publicBukkitValues != null) {
-                Long expire = publicBukkitValues.getLong("timeditem:expire_time");
-                if (expire != null) return expire;
+                return publicBukkitValues;
             }
         }
 
         // Direct PublicBukkitValues
-        NBTCompound directValues = itemCompound.getCompound("PublicBukkitValues");
-        if (directValues != null) {
-            return directValues.getLong("timeditem:expire_time");
-        }
-
-        return null;
+        return itemCompound.getCompound("PublicBukkitValues");
     }
 }
