@@ -1,9 +1,11 @@
 package me.timeditem.config;
 
 import me.timeditem.TimedItem;
+import me.timeditem.item.ExpireAction;
 import me.timeditem.util.ColorUtil;
 import me.timeditem.util.TimeParser;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -11,7 +13,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ConfigManager {
@@ -22,6 +26,7 @@ public class ConfigManager {
     private String currentLoadedLanguage = null;
     private String language;
     private String dateFormat;
+    private ExpireAction defaultExpireAction;
     private int checkInterval;
     private int offlineCheckInterval;
     private int equipmentCheckInterval;
@@ -34,11 +39,21 @@ public class ConfigManager {
     private int helpPerPage;
     private String loreFormat;
     private String loreInactiveFormat;
+    private String loreSealedFormat;
+
+    // Expiry warning configuration
+    private boolean expiryWarningEnabled;
+    private List<Integer> expiryWarningTimes = Collections.emptyList();
+    private boolean expiryWarningActionbar;
+    private boolean expiryWarningChat;
+    private Sound expiryWarningSound;
 
     // Token configuration
     private Material tokenMaterial;
     private int tokenCustomModelData;
     private boolean tokenGlow;
+    private int tokenMaxExtensions;
+    private boolean tokenAllowOnSealed;
     private String tokenName;
     private List<String> tokenLore;
 
@@ -73,6 +88,10 @@ public class ConfigManager {
         loadLangConfig();
 
         this.dateFormat = config.getString("date-format", "dd/MM/yyyy HH:mm:ss");
+        this.defaultExpireAction = ExpireAction.fromString(
+                config.getString("default-expire-action", "DELETE"),
+                ExpireAction.DELETE
+        );
         this.checkInterval = config.getInt("check-interval", 30);
         this.offlineCheckInterval = Math.max(10, config.getInt("offline-check-interval", 1800));
         this.equipmentCheckInterval = Math.max(1, config.getInt("equipment-check-interval", 2));
@@ -80,7 +99,7 @@ public class ConfigManager {
         this.inventoryCheck = config.getBoolean("inventory-check", true);
         this.offlineCheck = config.getBoolean("offline-check", false);
         this.containerCheck = config.getBoolean("container-check", true);
-        this.helpPerPage = config.getInt("help-per-page", 7);
+        this.helpPerPage = config.getInt("help-per-page", 8);
 
         // Parse max duration
         String maxDurStr = config.getString("max-duration", "3650d");
@@ -105,6 +124,30 @@ public class ConfigManager {
             }
         }
 
+        // Parse expiry warning settings
+        this.expiryWarningEnabled = config.getBoolean("expiry-warning.enabled", true);
+        List<Integer> rawTimes = config.getIntegerList("expiry-warning.times");
+        if (rawTimes.isEmpty()) {
+            this.expiryWarningTimes = Arrays.asList(300, 60, 10);
+        } else {
+            List<Integer> sorted = new ArrayList<>();
+            for (int t : rawTimes) {
+                if (t > 0) sorted.add(t);
+            }
+            sorted.sort(Collections.reverseOrder());
+            this.expiryWarningTimes = Collections.unmodifiableList(sorted);
+        }
+        this.expiryWarningActionbar = config.getBoolean("expiry-warning.actionbar", true);
+        this.expiryWarningChat = config.getBoolean("expiry-warning.chat", true);
+        String soundName = config.getString("expiry-warning.sound", "BLOCK_NOTE_BLOCK_PLING");
+        this.expiryWarningSound = null;
+        if (soundName != null && !soundName.isBlank()) {
+            try {
+                this.expiryWarningSound = Sound.valueOf(soundName.trim().toUpperCase());
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
         // Allow language files to provide lore formats
         if (langConfig.contains("lore-format")) {
             this.loreFormat = langConfig.getString("lore-format");
@@ -118,12 +161,20 @@ public class ConfigManager {
             this.loreInactiveFormat = config.getString("lore-inactive-format", "&eDuration: &a{duration}");
         }
 
+        if (langConfig.contains("lore-sealed-format")) {
+            this.loreSealedFormat = langConfig.getString("lore-sealed-format");
+        } else {
+            this.loreSealedFormat = config.getString("lore-sealed-format", "&c&l[EXPIRED - SEALED]");
+        }
+
         // Token settings
         String matName = config.getString("token.material", "PAPER");
         Material mat = Material.matchMaterial(matName != null ? matName : "PAPER");
         this.tokenMaterial = mat != null ? mat : Material.PAPER;
         this.tokenCustomModelData = config.getInt("token.custom-model-data", 0);
         this.tokenGlow = config.getBoolean("token.glow", true);
+        this.tokenMaxExtensions = Math.max(0, config.getInt("token.max-extensions", 0));
+        this.tokenAllowOnSealed = config.getBoolean("token.allow-on-sealed", true);
 
         // Allow language files to provide localized token name & lore
         if (langConfig.contains("token-name")) {
@@ -311,12 +362,27 @@ public class ConfigManager {
         return ColorUtil.colorize(langConfig.getString("status-expired", "&cĐã hết hạn"));
     }
 
+    public String getStatusSealed() {
+        return ColorUtil.colorize(langConfig.getString("status-sealed", "&4&lĐã phong ấn (Hết hạn)"));
+    }
+
     public String getStatusNone() {
         return ColorUtil.colorize(langConfig.getString("status-none", "&7Không có hạn"));
     }
 
+    public String getActionFormatted(ExpireAction action) {
+        if (action == ExpireAction.SEAL) {
+            return ColorUtil.colorize(langConfig.getString("action-seal", "&6Seal & Keep (SEAL)"));
+        }
+        return ColorUtil.colorize(langConfig.getString("action-delete", "&cAuto-Delete (DELETE)"));
+    }
+
     public String getDateFormat() {
         return dateFormat;
+    }
+
+    public ExpireAction getDefaultExpireAction() {
+        return defaultExpireAction != null ? defaultExpireAction : ExpireAction.DELETE;
     }
 
     public int getCheckInterval() {
@@ -356,6 +422,26 @@ public class ConfigManager {
         return containerCheck;
     }
 
+    public boolean isExpiryWarningEnabled() {
+        return expiryWarningEnabled;
+    }
+
+    public List<Integer> getExpiryWarningTimes() {
+        return expiryWarningTimes;
+    }
+
+    public boolean isExpiryWarningActionbar() {
+        return expiryWarningActionbar;
+    }
+
+    public boolean isExpiryWarningChat() {
+        return expiryWarningChat;
+    }
+
+    public Sound getExpiryWarningSound() {
+        return expiryWarningSound;
+    }
+
     public int getHelpPerPage() {
         return Math.max(1, helpPerPage);
     }
@@ -368,6 +454,10 @@ public class ConfigManager {
         return loreInactiveFormat;
     }
 
+    public String getLoreSealedFormat() {
+        return loreSealedFormat;
+    }
+
     public Material getTokenMaterial() {
         return tokenMaterial;
     }
@@ -378,6 +468,14 @@ public class ConfigManager {
 
     public boolean isTokenGlow() {
         return tokenGlow;
+    }
+
+    public int getTokenMaxExtensions() {
+        return tokenMaxExtensions;
+    }
+
+    public boolean isTokenAllowOnSealed() {
+        return tokenAllowOnSealed;
     }
 
     public String getTokenName() {
