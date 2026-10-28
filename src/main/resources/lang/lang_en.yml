@@ -8,29 +8,48 @@ prefix: "&8[&6TimedItem&8] &r"
 item-expired: "&cItem &e{item} &cx{amount} &chas expired and was removed from your inventory!"
 items-expired-offline: "&eWhile you were offline, &c{count} &eitem(s) expired and were removed from your inventory!"
 item-activated: "&aItem &e{item} &ahas been activated! Expiration: &e{expiry}"
+item-sealed: "&cItem &e{item} &chas expired and is now &4&lSEALED&c! Use an Extension Token to unlock it."
+item-is-sealed: "&cItem &e{item} &cis sealed because it expired! Apply an Extension Token to use it again."
+sealed-armor-unequipped: "&cYour armor &e{item} &chas expired, was sealed, and unequipped!"
 duration-set: "&aSet validity duration &e{duration} &afor item (countdown starts when held in Survival/Adventure mode)."
 time-added: "&aAdded &e{time} &ato item. New expiration: &e{expiry}"
 time-removed: "&aRemoved &e{time} &afrom item. New expiration: &e{expiry}"
 time-set: "&aSet expiration to &e{expiry}&a."
 time-cleared: "&aCleared expiration time from item."
+mode-updated: "&aUpdated expiration mode for held item to: {mode}"
+
+# Expiry warning messages
+expiry-warning-chat: "&e⚠ Warning: &f{item} &ewill expire in &c{remaining}&e!"
+expiry-warning-actionbar: "&e⚠ &f{item} &eexpires in &c{remaining}&e!"
 
 # General error & notice messages
 no-item-in-hand: "&cYou must hold an item in your hand!"
 not-timed-item: "&cThis item does not have an expiration time!"
 invalid-time-format: "&cInvalid time format! Example: 1d2h30m, 7d, 30m"
 invalid-date-format: "&cInvalid date format! Example: {format}"
+invalid-mode: "&cInvalid expiration mode! Choose &eDELETE &cor &eSEAL&c."
 date-in-past: "&cYou must set a date in the future!"
 no-permission: "&cYou do not have permission to use this command!"
 reloaded: "&aConfiguration and language reloaded successfully! (Language: {lang})"
 player-only: "&cThis command can only be executed by a player!"
 player-not-found: "&cPlayer &e{player} &cwas not found or is offline!"
 invalid-amount: "&cAmount must be a positive integer!"
-invalid-material: "&cInvalid Minecraft material: &e{material}&c!"
+invalid-material: "&cInvalid item or material: &e{material}&c!"
 usage: "&cUsage: {usage}"
 
-# Item give messages
+# Saved item templates (/ti save, /ti delete, /ti list)
+item-saved: "&aSaved held item as template &e{id}&a! Use &f/ti give <player> saved:{id} <time>&a."
+item-deleted: "&aDeleted saved item template &e{id}&a."
+saved-item-not-found: "&cSaved item template &e{id} &cdoes not exist!"
+saved-list-header: "&6&lSaved Item Templates ({count}):"
+saved-list-item: " &8- &e{id} &7({item}&7)"
+saved-list-empty: "&eNo saved item templates found. Hold an item and use &f/ti save <id>&e."
+
+# Item give & Custom Item Hook messages
 item-given: "&aGave &e{amount}x &a{item} (duration: &e{time}&a) to &e{player}&a!"
 item-received: "&aYou received &e{amount}x &a{item} (duration: &e{time}&a)!"
+hook-not-installed: "&cPlugin &e{plugin} &cis not installed or enabled on this server!"
+custom-item-not-found: "&cCustom item &e{id} &cfrom &e{plugin} &cwas not found!"
 
 # MMOItems integration messages
 mmo-not-installed: "&cMMOItems plugin is not installed or enabled on this server!"
@@ -44,11 +63,14 @@ inventory-full-dropped: "&eInventory of {player} is full! Item dropped on the gr
 token-given: "&aGave &e{amount}x &aExtension Token(s) (&e+{time}&a) to &e{player}&a!"
 token-received: "&aYou received &e{amount}x &aExtension Token(s) (&e+{time}&a)!"
 token-applied: "&aExtension token applied! Added &e+{time} &ato &e{item}&a. New expiration: &e{expiry}"
+token-unsealed: "&aUnlocked & extended &e{item} &aby &e+{time}&a! New expiration: &e{expiry}"
 token-cannot-extend: "&cCannot apply extension token to expired or non-timed items!"
+token-max-reached: "&cThis item has reached the maximum extension limit (&e{max}/{max}&c)!"
 
 # Lore display formats
 lore-inactive-format: "&eDuration: &a{duration}"
 lore-format: "&cExpires at: &e{expiry}"
+lore-sealed-format: "&c&l[EXPIRED - SEALED]"
 
 # Token item display
 token-name: "&6&lExtension Token &7(+{duration})"
@@ -59,11 +81,14 @@ token-lore:
   - "&eAdded duration: &a+{duration}"
   - "&8&o(Left-click on item to apply)"
 
-# Status labels (for /ti check and PlaceholderAPI)
+# Status & Action labels (for /ti check and PlaceholderAPI)
 status-active: "&aActive"
 status-inactive: "&eInactive"
 status-expired: "&cExpired"
+status-sealed: "&4&lSealed (Expired)"
 status-none: "&7Permanent"
+action-delete: "&cAuto-Delete (DELETE)"
+action-seal: "&6Seal & Keep (SEAL)"
 
 # Inspect (/ti check) format
 check-header: "&8&m----------------------------------------"
@@ -72,19 +97,25 @@ check-item: " &7* Item: &f{item}"
 check-status: " &7* Status: {status}"
 check-remaining: " &7* Remaining: &a{remaining}"
 check-expiry: " &7* Expiration: &e{expiry}"
+check-action: " &7* On Expire: {action}"
+check-extensions: " &7* Extensions Used: &e{used}/{max}"
 check-footer: "&8&m----------------------------------------"
 
 # Help system
 help-header: "&8&m----------&r &6TimedItem Help &7(Page {page}/{max_page}) &8&m----------"
 help-footer: "&8&m----------&r &7Type /ti help {next_page} to view next page &8&m----------"
 help-commands:
-  add: "&6/ti add [time] &7- Add duration to item in main hand. &8(e.g. /ti add 1d2h)"
-  remove: "&6/ti remove [time] &7- Remove duration from item in main hand. &8(e.g. /ti remove 3d5h)"
-  set: "&6/ti set <format> &7- Set exact expiration date or duration. &8(e.g. /ti set 12/07/2026)"
+  add: "&6/ti add <time> [DELETE|SEAL] &7- Add duration to item in main hand."
+  remove: "&6/ti remove <time> &7- Remove duration from item in main hand."
+  set: "&6/ti set <format> [DELETE|SEAL] &7- Set expiration date or duration."
   clear: "&6/ti clear &7- Clear expiration time from held item."
+  mode: "&6/ti mode <DELETE|SEAL> &7- Set expire action (Delete or Seal) for held item."
   check: "&6/ti check &7- Inspect timed item in your hand."
-  give: "&6/ti give <player> <material> <time> [amount] &7- Give a timed vanilla item."
-  givemmo: "&6/ti givemmo <player> <type> <id> <time> &7- Give a timed MMOItems item."
+  save: "&6/ti save <id> &7- Save held item as a reusable template."
+  delete: "&6/ti delete <id> &7- Delete a saved item template."
+  list: "&6/ti list &7- List all saved item templates."
+  give: "&6/ti give <player> <item> <time> [amount] [DELETE|SEAL] &7- Give timed item (Vanilla/saved:/ia:/oraxen:/nexo:/ei:/mmo:)."
+  givemmo: "&6/ti givemmo <player> <type> <id> <time> [DELETE|SEAL] &7- Give a timed MMOItems item."
   token: "&6/ti token <time> [amount] [player] &7- Create/give Time Extension Token."
   reload: "&6/ti reload &7- Reload plugin configuration and languages."
   help: "&6/ti help <page> &7- Show help menu."
