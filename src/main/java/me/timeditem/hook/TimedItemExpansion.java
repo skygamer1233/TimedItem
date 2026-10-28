@@ -56,46 +56,69 @@ public class TimedItemExpansion extends PlaceholderExpansion {
 
         ItemStack handItem = player.getInventory().getItemInMainHand();
         boolean hasItem = handItem != null && handItem.getType() != Material.AIR;
+        ItemManager.TimedData data = hasItem ? itemManager.getTimedData(handItem) : null;
 
         String param = params.toLowerCase();
 
         switch (param) {
             case "hand_is_timed" -> {
-                return (hasItem && itemManager.isTimedItem(handItem)) ? "true" : "false";
+                return (data != null && data.isTimed()) ? "true" : "false";
             }
             case "hand_status" -> {
-                if (!hasItem || !itemManager.isTimedItem(handItem)) {
+                if (data == null || !data.isTimed()) {
                     return "none";
                 }
-                if (itemManager.isExpired(handItem)) {
+                if (data.isSealed()) {
+                    return "sealed";
+                }
+                if (data.isExpired()) {
                     return "expired";
                 }
-                if (itemManager.isInactiveTimedItem(handItem)) {
+                if (data.isInactive()) {
                     return "inactive";
                 }
                 return "active";
             }
             case "hand_status_formatted" -> {
-                if (!hasItem || !itemManager.isTimedItem(handItem)) {
+                if (data == null || !data.isTimed()) {
                     return configManager.getStatusNone();
                 }
-                if (itemManager.isExpired(handItem)) {
-                    return configManager.getStatusExpired();
+                return itemManager.getStatusFormatted(data);
+            }
+            case "hand_expire_action" -> {
+                if (data == null || !data.isTimed()) {
+                    return "none";
                 }
-                if (itemManager.isInactiveTimedItem(handItem)) {
-                    return configManager.getStatusInactive();
+                return data.expireAction().name().toLowerCase();
+            }
+            case "hand_expire_action_formatted" -> {
+                if (data == null || !data.isTimed()) {
+                    return configManager.getStatusNone();
                 }
-                return configManager.getStatusActive();
+                return configManager.getActionFormatted(data.expireAction());
+            }
+            case "hand_extensions_used" -> {
+                if (data == null || !data.isTimed()) {
+                    return "0";
+                }
+                return String.valueOf(data.extensionsUsed());
+            }
+            case "hand_extensions_max" -> {
+                int max = configManager.getTokenMaxExtensions();
+                return max > 0 ? String.valueOf(max) : "unlimited";
             }
             case "hand_remaining" -> {
-                if (!hasItem || !itemManager.isTimedItem(handItem)) {
+                if (data == null || !data.isTimed()) {
                     return "";
                 }
-                if (itemManager.isInactiveTimedItem(handItem)) {
-                    Long duration = itemManager.getInactiveDuration(handItem);
+                if (data.isInactive()) {
+                    Long duration = data.duration();
                     return duration != null ? TimeParser.formatDuration(duration) : "";
                 }
-                Long expire = itemManager.getExpireTime(handItem);
+                if (data.isExpired()) {
+                    return "0s";
+                }
+                Long expire = data.expireTime();
                 if (expire == null) {
                     return "";
                 }
@@ -103,14 +126,17 @@ public class TimedItemExpansion extends PlaceholderExpansion {
                 return diff > 0 ? TimeParser.formatDuration(diff) : "0s";
             }
             case "hand_remaining_seconds" -> {
-                if (!hasItem || !itemManager.isTimedItem(handItem)) {
+                if (data == null || !data.isTimed()) {
                     return "0";
                 }
-                if (itemManager.isInactiveTimedItem(handItem)) {
-                    Long duration = itemManager.getInactiveDuration(handItem);
+                if (data.isInactive()) {
+                    Long duration = data.duration();
                     return duration != null ? String.valueOf(duration / 1000) : "0";
                 }
-                Long expire = itemManager.getExpireTime(handItem);
+                if (data.isExpired()) {
+                    return "0";
+                }
+                Long expire = data.expireTime();
                 if (expire == null) {
                     return "0";
                 }
@@ -118,23 +144,23 @@ public class TimedItemExpansion extends PlaceholderExpansion {
                 return String.valueOf(Math.max(0, diff / 1000));
             }
             case "hand_expiry" -> {
-                if (!hasItem || !itemManager.isTimedItem(handItem)) {
+                if (data == null || !data.isTimed()) {
                     return "";
                 }
-                if (itemManager.isInactiveTimedItem(handItem)) {
+                if (data.isInactive()) {
                     return "inactive";
                 }
-                Long expire = itemManager.getExpireTime(handItem);
+                Long expire = data.expireTime();
                 if (expire == null) {
                     return "";
                 }
                 return DateParser.formatDate(expire, configManager.getDateFormat());
             }
             case "hand_duration" -> {
-                if (!hasItem || !itemManager.isTimedItem(handItem)) {
+                if (data == null || !data.isTimed()) {
                     return "";
                 }
-                Long duration = itemManager.getInactiveDuration(handItem);
+                Long duration = data.duration();
                 return duration != null ? TimeParser.formatDuration(duration) : "";
             }
             case "hand_name" -> {
