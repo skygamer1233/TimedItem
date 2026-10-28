@@ -1,5 +1,5 @@
 # ======================================================
-#            TimedItem Configuration (v1.1.0)
+#            TimedItem Configuration (v1.2.0)
 # ======================================================
 
 # Active language of the plugin:
@@ -13,6 +13,11 @@ language: "en"
 # Default: dd/MM/yyyy HH:mm:ss
 date-format: "dd/MM/yyyy HH:mm:ss"
 
+# Default action when a timed item expires (unless overridden per item via /ti mode):
+#   "DELETE" : Completely removes the item from inventory
+#   "SEAL"   : Keeps the item in a Sealed/Locked state (can be revived with an Extension Token)
+default-expire-action: "DELETE"
+
 # Maximum duration allowed for an item (e.g. 365d, 3650d)
 # Prevents arithmetic overflow when adding time to items
 max-duration: "3650d"
@@ -22,7 +27,7 @@ max-duration: "3650d"
 check-interval: 30
 
 # Fast equipment check interval (in seconds)
-# Checks armor & held items every X seconds to immediately remove expired gear
+# Checks armor & held items every X seconds to immediately remove/seal expired gear
 equipment-check-interval: 2
 
 # Game modes where inactive timed items are automatically activated
@@ -52,7 +57,22 @@ offline-check: false
 offline-check-interval: 1800
 
 # Number of items shown per help page (/ti help)
-help-per-page: 7
+help-per-page: 8
+
+# Expiry warning notifications when equipped/held items are about to expire
+expiry-warning:
+  enabled: true
+  # Remaining time thresholds (in seconds) to trigger a warning (e.g. 300s = 5m, 60s = 1m, 10s)
+  times:
+    - 300
+    - 60
+    - 10
+  # Display warning on player's Actionbar
+  actionbar: true
+  # Send warning message in Chat
+  chat: true
+  # Sound played when warning triggers (leave empty "" to disable sound)
+  sound: "BLOCK_NOTE_BLOCK_PLING"
 
 # Technical settings for Extension Tokens (Phiếu Gia Hạn)
 # Display name & lore of tokens are localized in lang/lang_en.yml or lang/lang_vi.yml
@@ -60,3 +80,7 @@ token:
   material: PAPER
   custom-model-data: 0
   glow: true
+  # Maximum number of times an item can be extended with tokens (0 = unlimited)
+  max-extensions: 0
+  # Allow using Extension Tokens to unseal/revive expired items that are in SEAL mode
+  allow-on-sealed: true

@@ -13,6 +13,11 @@ language: "vi"
 # Mặc định: dd/MM/yyyy HH:mm:ss
 date-format: "dd/MM/yyyy HH:mm:ss"
 
+# Chế độ xử lý mặc định khi vật phẩm hết hạn (nếu item không được gắn chế độ riêng qua /ti mode):
+#   "DELETE" : Xóa biến mất hoàn toàn khỏi kho đồ
+#   "SEAL"   : Phong ấn vật phẩm (giữ lại đồ nhưng khóa tính năng, chờ dùng Phiếu Gia Hạn để mở khóa)
+default-expire-action: "DELETE"
+
 # Thời gian tối đa cho phép của một item (vd: 365d, 3650d)
 # Ngăn chặn lỗi tràn số khi cộng dồn thời hạn quá lớn
 max-duration: "3650d"
@@ -22,7 +27,7 @@ max-duration: "3650d"
 check-interval: 30
 
 # Chu kỳ quét nhanh các ô trang bị (tính bằng giây)
-# Quét giáp và item trên tay mỗi X giây để lập tức thu hồi đồ hết hạn
+# Quét giáp và item trên tay mỗi X giây để lập tức thu hồi/phong ấn đồ hết hạn
 equipment-check-interval: 2
 
 # Chế độ chơi (GameMode) sẽ tự động kích hoạt tính giờ cho item
@@ -51,7 +56,22 @@ offline-check: false
 offline-check-interval: 1800
 
 # Số lượng lệnh hiển thị trên mỗi trang của bảng trợ giúp (/ti help)
-help-per-page: 7
+help-per-page: 8
+
+# Cảnh báo nhắc nhở khi vật phẩm đang mặc/cầm sắp hết hạn
+expiry-warning:
+  enabled: true
+  # Các mốc thời gian còn lại (tính bằng giây) sẽ phát cảnh báo (VD: 300s = 5 phút, 60s = 1 phút, 10s)
+  times:
+    - 300
+    - 60
+    - 10
+  # Hiển thị dòng cảnh báo nổi trên thanh Actionbar
+  actionbar: true
+  # Gửi tin nhắn cảnh báo vào khung Chat
+  chat: true
+  # Âm thanh phát ra khi cảnh báo (để trống "" nếu muốn tắt âm thanh)
+  sound: "BLOCK_NOTE_BLOCK_PLING"
 
 # Thiết lập kỹ thuật cho vật phẩm Phiếu Gia Hạn (Extension Tokens):
 # (Phần chữ hiển thị tên và lore của phiếu nằm trong lang_vi.yml / lang_en.yml)
@@ -64,3 +84,9 @@ token:
 
   # Hiệu ứng phát sáng phù phép (true: có phát sáng, false: không)
   glow: true
+
+  # Giới hạn số lần tối đa một vật phẩm được dùng Phiếu Gia Hạn (0 = không giới hạn)
+  max-extensions: 0
+
+  # Cho phép dùng Phiếu Gia Hạn để mở khóa/hồi sinh vật phẩm đã hết hạn ở chế độ SEAL
+  allow-on-sealed: true

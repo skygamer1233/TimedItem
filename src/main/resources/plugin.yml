@@ -1,14 +1,14 @@
 name: TimedItem
-version: 1.1.0
+version: 1.2.0
 main: me.timeditem.TimedItem
 api-version: '1.21'
 description: Advanced item expiration and duration management for Minecraft
 author: SkyGamer
-softdepend: [MMOItems, PlaceholderAPI]
+softdepend: [MMOItems, PlaceholderAPI, ItemsAdder, Oraxen, Nexo, ExecutableItems]
 commands:
   ti:
     description: TimedItem main command
-    usage: /ti <add|remove|set|clear|check|give|givemmo|token|reload|help>
+    usage: /ti <add|remove|set|clear|mode|check|save|delete|list|give|givemmo|token|reload|help>
     aliases: [timeditem]
 permissions:
   timeditem.*:
@@ -24,7 +24,11 @@ permissions:
       timeditem.command.remove: true
       timeditem.command.set: true
       timeditem.command.clear: true
+      timeditem.command.mode: true
       timeditem.command.check: true
+      timeditem.command.save: true
+      timeditem.command.delete: true
+      timeditem.command.list: true
       timeditem.command.give: true
       timeditem.command.givemmo: true
       timeditem.command.token: true
@@ -42,11 +46,23 @@ permissions:
   timeditem.command.clear:
     description: Clear expiration time from item
     default: op
+  timeditem.command.mode:
+    description: Set expiration mode (DELETE or SEAL) on held item
+    default: op
   timeditem.command.check:
     description: Check timed item in hand
     default: true
+  timeditem.command.save:
+    description: Save held item as a custom template
+    default: op
+  timeditem.command.delete:
+    description: Delete a saved item template
+    default: op
+  timeditem.command.list:
+    description: List all saved item templates
+    default: op
   timeditem.command.give:
-    description: Give timed vanilla item to a player
+    description: Give timed vanilla or custom item to a player
     default: op
   timeditem.command.givemmo:
     description: Give timed MMOItems item to a player
